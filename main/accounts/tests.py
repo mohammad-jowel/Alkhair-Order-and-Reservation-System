@@ -96,3 +96,23 @@ class AccountsTestCase(TestCase):
         req.user = self.customer
         view_res = dummy_admin_view(req)
         self.assertEqual(view_res.status_code, 403)
+
+    def test_open_redirect_prevented(self):
+        """Malicious external next parameter is blocked to prevent open redirect."""
+        response = self.client.post(f"{reverse('accounts:login')}?next=https://malicious-phishing-site.com", {
+            'email': 'customer_test@alkhair.com',
+            'password': 'CustomerPassword123!',
+        })
+        self.assertEqual(response.status_code, 302)
+        # Must redirect internally, never to the external host
+        self.assertNotIn('malicious-phishing-site.com', response.url)
+        self.assertEqual(response.url, reverse('core:home'))
+
+    def test_admin_login_redirects_to_dashboard(self):
+        """Logging in as admin redirects to dashboard."""
+        response = self.client.post(reverse('accounts:login'), {
+            'email': 'admin_test@alkhair.com',
+            'password': 'AdminPassword123!',
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse('dashboard:dashboard'))
