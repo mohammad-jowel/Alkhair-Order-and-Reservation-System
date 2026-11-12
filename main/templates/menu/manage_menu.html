@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Menu - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 fw-bold mb-1"><i class="bi bi-card-list text-primary me-2"></i>Menu Management</h1>
+        <p class="text-muted small mb-0">Create, edit, toggle availability, and remove categories and items</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'menu:add_category' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-folder-plus me-1"></i> Add Category
+        </a>
+        <a href="{% url 'menu:add_item' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Add Menu Item
+        </a>
+    </div>
+</div>
+
+<!-- Categories Summary Table -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Categories ({{ categories.count }})</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive-wrapper">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 80px;">ID</th>
+                        <th>Category Name</th>
+                        <th style="width: 140px;">Items Count</th>
+                        <th style="width: 180px;" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categories %}
+                        <tr>
+                            <td>#{{ cat.category_id }}</td>
+                            <td class="fw-semibold">{{ cat.category_name }}</td>
+                            <td><span class="badge bg-secondary">{{ cat.items.count }} items</span></td>
+                            <td class="text-end">
+                                <a href="{% url 'menu:edit_category' cat.category_id %}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Edit Category">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="{% url 'menu:delete_category' cat.category_id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" data-confirm="Are you sure you want to delete category '{{ cat.category_name }}'?" title="Delete Category">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-3 text-muted">No categories created yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Menu Items Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">Menu Items ({{ items.count }})</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive-wrapper">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 60px;">ID</th>
+                        <th>Item Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th style="width: 140px;">Availability</th>
+                        <th style="width: 160px;" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td>#{{ item.item_id }}</td>
+                            <td>
+                                <div class="fw-bold">{{ item.item_name }}</div>
+                                <div class="text-muted small text-truncate" style="max-width: 300px;">{{ item.description|default:"-" }}</div>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">{{ item.category.category_name }}</span></td>
+                            <td class="fw-bold text-primary">RM {{ item.price|floatformat:2 }}</td>
+                            <td>
+                                {% if item.is_available %}
+                                    <span class="badge bg-success">Available</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Unavailable</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'menu:toggle_availability' item.item_id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm {% if item.is_available %}btn-outline-warning{% else %}btn-outline-success{% endif %} py-1 px-2">
+                                        {% if item.is_available %}Make Inactive{% else %}Make Active{% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'menu:edit_item' item.item_id %}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Edit Item">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="{% url 'menu:delete_item' item.item_id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" data-confirm="Are you sure you want to delete '{{ item.item_name }}'?" title="Delete Item">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No menu items found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

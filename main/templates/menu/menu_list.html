@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Menu - Restoran Alkhair{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="display-6 fw-bold mb-1">Our Menu</h1>
+        <p class="text-muted mb-0">Authentic Middle-Eastern grills, shawarmas, and traditional specialties</p>
+    </div>
+
+    {% if table_number %}
+        <div class="alert alert-warning py-2 px-3 mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-geo-alt-fill text-dark fs-5"></i>
+            <div>
+                <span class="fw-bold">Dine-in Order: Table #{{ table_number }}</span>
+                <a href="{% url 'orders:clear_table' %}" class="btn btn-sm btn-outline-danger ms-2 py-0 px-2" title="Clear table selection">Cancel Table</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Category Filter Pills -->
+<div class="d-flex flex-wrap gap-2 mb-4 pb-2 border-bottom">
+    <a href="{% url 'menu:menu_list' %}" class="btn btn-sm {% if not selected_category_id %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+        All Categories
+    </a>
+    {% for cat in all_categories %}
+        <a href="{% url 'menu:menu_list' %}?category={{ cat.category_id }}" class="btn btn-sm {% if selected_category_id == cat.category_id %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+            {{ cat.category_name }}
+        </a>
+    {% endfor %}
+</div>
+
+<!-- Menu Items by Category -->
+{% for cat in categories %}
+    <section class="mb-5" aria-labelledby="cat-heading-{{ cat.category_id }}">
+        <h2 id="cat-heading-{{ cat.category_id }}" class="h4 fw-bold pb-2 border-bottom mb-4 text-primary">
+            {{ cat.category_name }}
+        </h2>
+
+        <div class="row g-4">
+            {% for item in cat.items.all %}
+                {% if item.is_available or user.is_admin %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm border-0 {% if not item.is_available %}opacity-75 bg-light{% endif %}">
+                            <div style="height: 180px; overflow: hidden; background-color: #f3f0ea;" class="d-flex align-items-center justify-content-center">
+                                {% if item.image %}
+                                    <img src="{{ item.image.url }}" alt="{{ item.item_name }}" class="w-100 h-100" style="object-fit: cover;">
+                                {% elif "kebab" in item.item_name|lower or "barbecue" in item.item_name|lower %}
+                                    <img src="{% static 'img/kebab_platter.svg' %}" alt="{{ item.item_name }}" class="w-100 h-100" style="object-fit: cover;">
+                                {% elif "shawarma" in item.item_name|lower or "sandwich" in item.item_name|lower or "zinger" in item.item_name|lower %}
+                                    <img src="{% static 'img/shawarma_wrap.svg' %}" alt="{{ item.item_name }}" class="w-100 h-100" style="object-fit: cover;">
+                                {% elif "lamb" in item.item_name|lower %}
+                                    <img src="{% static 'img/lamb_shank.svg' %}" alt="{{ item.item_name }}" class="w-100 h-100" style="object-fit: cover;">
+                                {% else %}
+                                    <img src="{% static 'img/kebab_platter.svg' %}" alt="{{ item.item_name }}" class="w-100 h-100" style="object-fit: cover;">
+                                {% endif %}
+                            </div>
+
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title fw-bold mb-0 text-dark">{{ item.item_name }}</h5>
+                                    <span class="fs-5 fw-bold text-primary">RM {{ item.price|floatformat:2 }}</span>
+                                </div>
+
+                                <p class="card-text text-muted small flex-grow-1 mb-3">
+                                    {{ item.description|default:"Prepared fresh with authentic Middle-Eastern spices." }}
+                                </p>
+
+                                {% if not item.is_available %}
+                                    <div class="alert alert-secondary py-1 text-center small mb-0">Currently Unavailable</div>
+                                {% else %}
+                                    <form method="post" action="{% url 'orders:cart_view' %}" class="d-flex align-items-center gap-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="add">
+                                        <input type="hidden" name="item_id" value="{{ item.item_id }}">
+                                        
+                                        <div class="input-group input-group-sm cart-quantity-control" style="width: 100px;">
+                                            <button type="button" class="btn btn-outline-secondary btn-qty-minus" aria-label="Decrease quantity">-</button>
+                                            <input type="number" name="quantity" value="1" min="1" max="99" class="form-control text-center px-1" aria-label="Quantity for {{ item.item_name }}">
+                                            <button type="button" class="btn btn-outline-secondary btn-qty-plus" aria-label="Increase quantity">+</button>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                                            <i class="bi bi-cart-plus me-1"></i> Add to Cart
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% empty %}
+                <div class="col-12 text-muted">No items found in this category.</div>
+            {% endfor %}
+        </div>
+    </section>
+{% empty %}
+    <div class="text-center py-5 text-muted">
+        <p>No menu items available at the moment.</p>
+    </div>
+{% endfor %}
+{% endblock %}

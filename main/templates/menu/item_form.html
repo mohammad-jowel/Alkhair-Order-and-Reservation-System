@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Restoran Alkhair{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="fw-bold mb-0"><i class="bi bi-egg-fried text-primary me-2"></i>{{ title }}</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.category.id_for_label }}" class="form-label fw-semibold">Category</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.price.id_for_label }}" class="form-label fw-semibold">Price (RM)</label>
+                            {{ form.price }}
+                            {% if form.price.errors %}
+                                <div class="text-danger small mt-1">{{ form.price.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.item_name.id_for_label }}" class="form-label fw-semibold">Item Name</label>
+                        {{ form.item_name }}
+                        {% if form.item_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.item_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">Description</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.image.id_for_label }}" class="form-label fw-semibold">Item Photo (Optional)</label>
+                        {{ form.image }}
+                        <div class="form-text small">Accepted formats: JPG, PNG, WebP (Max 5MB).</div>
+                        {% if item and item.image %}
+                            <div class="mt-2">
+                                <span class="text-muted small">Current Photo:</span>
+                                <img src="{{ item.image.url }}" alt="{{ item.item_name }}" class="img-thumbnail ms-2" style="height: 60px;">
+                            </div>
+                        {% endif %}
+                        {% if form.image.errors %}
+                            <div class="text-danger small mt-1">{{ form.image.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4 form-check form-switch">
+                        {{ form.is_available }}
+                        <label class="form-check-label fw-semibold" for="{{ form.is_available.id_for_label }}">
+                            Available for Customer Ordering
+                        </label>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'menu:manage_menu' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check2 me-1"></i> Save Menu Item
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
