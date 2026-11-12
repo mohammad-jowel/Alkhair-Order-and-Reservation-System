@@ -51,8 +51,9 @@ class OrdersTestCase(TestCase):
             'action': 'add',
             'item_id': self.item1.item_id,
             'quantity': 2,
+            'next': reverse('menu:menu_list'),
         })
-        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('menu:menu_list'))
         cart = self.client.session.get('cart', {})
         self.assertEqual(cart.get(str(self.item1.item_id)), 2)
 

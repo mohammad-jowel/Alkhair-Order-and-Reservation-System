@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.http import Http404
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from accounts.decorators import admin_required
 from menu.models import MenuItem
 from .models import Order, OrderItem, RestaurantTable
@@ -56,8 +57,17 @@ def cart_view(request):
                 messages.success(request, msg)
             else:
                 messages.error(request, msg)
-            # If user added from menu, redirect to cart or back
-            return redirect('orders:cart_view')
+
+            # Redirect back to where the item was added from (e.g. menu page)
+            next_url = request.POST.get('next')
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+
+            referer = request.META.get('HTTP_REFERER')
+            if referer and url_has_allowed_host_and_scheme(referer, allowed_hosts={request.get_host()}):
+                return redirect(referer)
+
+            return redirect('menu:menu_list')
 
         elif action == 'update' and item_id:
             try:
