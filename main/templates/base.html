@@ -168,17 +168,26 @@
                 </div>
             </header>
 
-            <!-- Flash Feedback Messages -->
+            <!-- Floating Toast Notifications (Overlays on top without creating separate layout area) -->
             {% if messages %}
-                <div class="px-3 px-lg-4 pt-3">
-                    <div style="max-width: 1240px; margin: 0 auto;">
-                        {% for message in messages %}
-                            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show mb-2" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="toast-notification-container" role="region" aria-label="System Notifications">
+                    {% for message in messages %}
+                        <div class="toast-notification alert alert-{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                            <div class="d-flex align-items-center gap-2 pe-3">
+                                {% if message.tags == 'success' %}
+                                    <i class="bi bi-check-circle-fill text-success fs-5 flex-shrink-0"></i>
+                                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                    <i class="bi bi-exclamation-circle-fill text-danger fs-5 flex-shrink-0"></i>
+                                {% elif message.tags == 'warning' %}
+                                    <i class="bi bi-exclamation-triangle-fill text-warning fs-5 flex-shrink-0"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle-fill text-primary fs-5 flex-shrink-0"></i>
+                                {% endif %}
+                                <div class="toast-message-text">{{ message }}</div>
                             </div>
-                        {% endfor %}
-                    </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
                 </div>
             {% endif %}
 
