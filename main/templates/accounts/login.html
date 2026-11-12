@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Restoran Alkhair{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom text-center">
+                <h1 class="h4 fw-bold mb-1"><i class="bi bi-box-arrow-in-right text-primary me-2"></i>Sign In</h1>
+                <p class="text-muted small mb-0">Access your orders, reservations, and profile</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" action="{% url 'accounts:login' %}" novalidate>
+                    {% csrf_token %}
+                    {% if next %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label fw-semibold">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.password.id_for_label }}" class="form-label fw-semibold">Password</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Log In
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center text-muted small">
+                    Don't have an account yet? 
+                    <a href="{% url 'accounts:register' %}{% if next %}?next={{ next }}{% endif %}" class="fw-bold text-primary">Register here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
