@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Table Reservations - Restoran Alkhair{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="display-6 fw-bold mb-1"><i class="bi bi-calendar2-check text-primary me-2"></i>Table Reservations</h1>
+    <p class="text-muted mb-0">Book a dining table in advance or manage your existing reservations</p>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Left Column: Booking Form -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="fw-bold mb-0"><i class="bi bi-calendar-plus text-primary me-2"></i>Book a Table</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-light border small mb-3">
+                    <i class="bi bi-info-circle text-primary me-1"></i>
+                    Operating Hours: <strong>{{ opening_time }} – {{ closing_time }}</strong>.<br>
+                    Reservations accommodate 1 to 20 guests.
+                </div>
+
+                <form method="post" action="{% url 'reservations:reservation_list' %}" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label for="{{ form.reservation_date.id_for_label }}" class="form-label fw-semibold">Date</label>
+                            {{ form.reservation_date }}
+                            {% if form.reservation_date.errors %}
+                                <div class="text-danger small mt-1">{{ form.reservation_date.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.reservation_time.id_for_label }}" class="form-label fw-semibold">Time</label>
+                            {{ form.reservation_time }}
+                            {% if form.reservation_time.errors %}
+                                <div class="text-danger small mt-1">{{ form.reservation_time.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.party_size.id_for_label }}" class="form-label fw-semibold">Number of Guests</label>
+                        {{ form.party_size }}
+                        {% if form.party_size.errors %}
+                            <div class="text-danger small mt-1">{{ form.party_size.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.note.id_for_label }}" class="form-label fw-semibold">Special Notes (Optional)</label>
+                        {{ form.note }}
+                        {% if form.note.errors %}
+                            <div class="text-danger small mt-1">{{ form.note.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="bi bi-check2-circle me-1"></i> Request Reservation
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: My Existing Reservations -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>My Reservations</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive-wrapper">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ref #</th>
+                                <th>Date &amp; Time</th>
+                                <th>Guests</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for res in reservations %}
+                                <tr>
+                                    <td class="fw-bold">#{{ res.reservation_id }}</td>
+                                    <td>
+                                        <div class="fw-semibold">{{ res.reservation_date|date:"D, d M Y" }}</div>
+                                        <div class="text-muted small">{{ res.reservation_time|time:"H:i" }}</div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">{{ res.party_size }} guests</span></td>
+                                    <td>
+                                        {% if res.status == 'confirmed' %}
+                                            <span class="badge bg-success">Confirmed</span>
+                                        {% elif res.status == 'pending' %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% elif res.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% elif res.status == 'cancelled' %}
+                                            <span class="badge bg-secondary">Cancelled</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if res.status == 'pending' or res.status == 'confirmed' %}
+                                            <form method="post" action="{% url 'reservations:cancel_reservation' res.reservation_id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" data-confirm="Are you sure you want to cancel this reservation?">
+                                                    Cancel
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <span class="text-muted small">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if res.note %}
+                                    <tr class="table-light">
+                                        <td colspan="5" class="small text-muted py-1 ps-4">
+                                            <em>Note: {{ res.note }}</em>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        No reservations made yet. Fill the form to book your table!
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
