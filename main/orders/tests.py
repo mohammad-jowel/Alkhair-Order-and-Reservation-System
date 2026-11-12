@@ -223,3 +223,53 @@ class OrdersTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertNotIn('table_id', self.client.session)
         self.assertNotIn('table_number', self.client.session)
+
+    def test_payment_simulation_success(self):
+        """Simulating success sets payment_status = paid and keeps order_status separate."""
+        order = Order.objects.create(
+            account=self.customer1,
+            order_type='takeaway',
+            order_status='pending',
+            payment_method='sim_card',
+            payment_status='pending',
+            total_amount=Decimal('25.00')
+        )
+        self.client.login(email='cust1_orders@alkhair.com', password='CustomerPassword123!')
+        response = self.client.post(reverse('orders:payment_simulation', args=[order.order_id]), {
+            'simulation_result': 'success'
+        })
+        self.assertEqual(response.status_code, 302)
+        order.refresh_from_db()
+        self.assertEqual(order.payment_status, 'paid')
+        self.assertEqual(order.order_status, 'pending')
+
+    def test_payment_simulation_failure_and_switch_to_cash(self):
+        """Simulating failure sets payment_status = failed; user can switch to cash."""
+        order = Order.objects.create(
+            account=self.customer1,
+            order_type='delivery',
+            delivery_address='Parit Raja',
+            order_status='pending',
+            payment_method='sim_banking',
+            payment_status='pending',
+            total_amount=Decimal('30.00')
+        )
+        self.client.login(email='cust1_orders@alkhair.com', password='CustomerPassword123!')
+        
+        # Test failure
+        response = self.client.post(reverse('orders:payment_simulation', args=[order.order_id]), {
+            'simulation_result': 'fail'
+        })
+        self.assertEqual(response.status_code, 200)
+        order.refresh_from_db()
+        self.assertEqual(order.payment_status, 'failed')
+        self.assertEqual(order.order_status, 'pending')
+
+        # Test switch to cash
+        response_cash = self.client.post(reverse('orders:payment_simulation', args=[order.order_id]), {
+            'simulation_result': 'switch_to_cash'
+        })
+        self.assertEqual(response_cash.status_code, 302)
+        order.refresh_from_db()
+        self.assertEqual(order.payment_method, 'cash')
+        self.assertEqual(order.payment_status, 'pending')
