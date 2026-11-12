@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Restoran Alkhair - Middle-Eastern Cuisine{% endblock %}</title>
-    <!-- Google Fonts: Inter (Clean Modern Sans-Serif) -->
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,158 +18,168 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Main Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top" aria-label="Main Navigation">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'core:home' %}">
-                <i class="bi bi-fire text-warning"></i>
+    <div class="app-wrapper">
+
+        <!-- ============ SIDEBAR ============ -->
+        <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
+            <a class="sidebar-brand" href="{% url 'core:home' %}">
+                <span class="brand-icon"><i class="bi bi-fire"></i></span>
                 <span>Restoran Alkhair</span>
             </a>
 
-            <!-- Active Table Badge (Dine-in QR context) -->
+            <!-- Active Table Badge (Dine-in QR) -->
             {% if request.session.table_number %}
-                <div class="d-lg-none ms-auto me-2">
-                    <span class="table-badge">
-                        <i class="bi bi-geo-alt-fill"></i> Table #{{ request.session.table_number }}
-                        <a href="{% url 'orders:clear_table' %}" title="Clear Table" aria-label="Clear active dining table">&times;</a>
-                    </span>
+                <div class="sidebar-table-badge">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    Table #{{ request.session.table_number }}
+                    <a href="{% url 'orders:clear_table' %}" title="Clear Table" aria-label="Clear active dining table">&times;</a>
                 </div>
             {% endif %}
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarMain">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'core:home' %}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'menu:menu_list' %}">Menu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'core:about' %}">About &amp; Contact</a>
-                    </li>
-
-                    {% if user.is_authenticated and user.is_admin %}
-                        <!-- Admin Navigation Links -->
-                        <li class="nav-item">
-                            <a class="nav-link text-warning fw-bold" href="{% url 'dashboard:dashboard' %}">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'menu:manage_menu' %}">Manage Menu</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'orders:manage_orders' %}">Manage Orders</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'reservations:manage_reservations' %}">Manage Reservations</a>
-                        </li>
-                    {% endif %}
-
-                    {% if user.is_authenticated and not user.is_admin %}
-                        <!-- Customer Navigation Links -->
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'orders:my_orders' %}">My Orders</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'reservations:reservation_list' %}">Reservations</a>
-                        </li>
-                    {% endif %}
+            <!-- Public Navigation -->
+            <nav class="sidebar-section">
+                <p class="sidebar-label">Menu</p>
+                <ul class="sidebar-nav">
+                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}"><i class="bi bi-house"></i> Home</a></li>
+                    <li><a class="sidebar-link {% if request.resolver_match.app_name == 'menu' and request.resolver_match.url_name == 'menu_list' %}active{% endif %}" href="{% url 'menu:menu_list' %}"><i class="bi bi-journal-text"></i> Menu</a></li>
+                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'core:about' %}"><i class="bi bi-info-circle"></i> About & Contact</a></li>
                 </ul>
+            </nav>
 
-                <div class="d-flex align-items-center gap-3">
-                    <!-- Active Table Badge for Desktop -->
-                    {% if request.session.table_number %}
-                        <div class="d-none d-lg-block">
-                            <span class="table-badge">
-                                <i class="bi bi-geo-alt-fill"></i> Table #{{ request.session.table_number }}
-                                <a href="{% url 'orders:clear_table' %}" title="Clear Table" aria-label="Clear active dining table">&times;</a>
-                            </span>
-                        </div>
-                    {% endif %}
+            {% if user.is_authenticated and not user.is_admin %}
+            <!-- Customer Navigation -->
+            <nav class="sidebar-section">
+                <p class="sidebar-label">My Account</p>
+                <ul class="sidebar-nav">
+                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'my_orders' %}active{% endif %}" href="{% url 'orders:my_orders' %}"><i class="bi bi-receipt"></i> My Orders</a></li>
+                    <li><a class="sidebar-link {% if request.resolver_match.app_name == 'reservations' %}active{% endif %}" href="{% url 'reservations:reservation_list' %}"><i class="bi bi-calendar2-check"></i> Reservations</a></li>
+                </ul>
+            </nav>
+            {% endif %}
 
-                    <!-- Cart Link (Customer / Visitor) -->
-                    {% if not user.is_authenticated or not user.is_admin %}
-                        <a href="{% url 'orders:cart_view' %}" class="btn btn-outline-light btn-sm position-relative" aria-label="View shopping cart">
-                            <i class="bi bi-cart3"></i> Cart
+            {% if user.is_authenticated and user.is_admin %}
+            <!-- Admin Navigation -->
+            <hr class="sidebar-divider">
+            <nav class="sidebar-section">
+                <p class="sidebar-label">Administration</p>
+                <ul class="sidebar-nav">
+                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'manage_menu' or request.resolver_match.url_name == 'add_item' or request.resolver_match.url_name == 'edit_item' %}active{% endif %}" href="{% url 'menu:manage_menu' %}"><i class="bi bi-grid"></i> Manage Menu</a></li>
+                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'manage_orders' %}active{% endif %}" href="{% url 'orders:manage_orders' %}"><i class="bi bi-inbox"></i> Manage Orders</a></li>
+                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'manage_reservations' %}active{% endif %}" href="{% url 'reservations:manage_reservations' %}"><i class="bi bi-calendar2-range"></i> Manage Reservations</a></li>
+                </ul>
+            </nav>
+            {% endif %}
+
+            <!-- Cart (visible for customers / visitors) -->
+            {% if not user.is_authenticated or not user.is_admin %}
+            <hr class="sidebar-divider">
+            <nav class="sidebar-section">
+                <ul class="sidebar-nav">
+                    <li>
+                        <a class="sidebar-link {% if request.resolver_match.url_name == 'cart_view' %}active{% endif %}" href="{% url 'orders:cart_view' %}">
+                            <i class="bi bi-cart3"></i>
+                            Cart
                             {% if request.session.cart_count %}
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark">
-                                    {{ request.session.cart_count }}
-                                    <span class="visually-hidden">items in cart</span>
-                                </span>
+                                <span class="badge bg-warning text-dark ms-auto">{{ request.session.cart_count }}</span>
                             {% endif %}
                         </a>
-                    {% endif %}
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
 
-                    <!-- User Account Dropdown / Links -->
-                    {% if user.is_authenticated %}
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="userMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle"></i> {{ user.full_name|default:user.email }}
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuBtn">
-                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person"></i> My Profile</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                    {% else %}
-                        <div class="d-flex gap-2">
-                            <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-outline-light">Login</a>
-                            <a href="{% url 'accounts:register' %}" class="btn btn-sm btn-primary">Register</a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content Container -->
-    <main class="container">
-        <!-- Django Feedback Messages -->
-        {% if messages %}
-            <div class="messages-container mb-4" role="region" aria-label="System notifications">
-                {% for message in messages %}
-                    <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <!-- Sidebar Footer — User -->
+            <div class="sidebar-footer">
+                {% if user.is_authenticated %}
+                    <a class="sidebar-user" href="{% url 'accounts:profile' %}">
+                        <span class="sidebar-user-avatar"><i class="bi bi-person"></i></span>
+                        <span class="sidebar-user-info">
+                            <span class="sidebar-user-name">{{ user.full_name|default:user.email }}</span>
+                            <span class="sidebar-user-role">{% if user.is_admin %}Admin{% else %}Customer{% endif %}</span>
+                        </span>
+                    </a>
+                    <form method="post" action="{% url 'accounts:logout' %}" class="mt-1">
+                        {% csrf_token %}
+                        <button type="submit" class="sidebar-link text-zinc-400 w-100 border-0 bg-transparent" style="cursor:pointer;">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="d-flex flex-column gap-1">
+                        <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-sm w-100">Login</a>
+                        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm w-100">Register</a>
                     </div>
-                {% endfor %}
+                {% endif %}
             </div>
-        {% endif %}
+        </aside>
 
-        {% block content %}{% endblock %}
-    </main>
+        <!-- Mobile overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <h5 class="text-white"><i class="bi bi-fire text-warning"></i> Restoran Alkhair</h5>
-                    <p class="mb-1">Authentic Middle-Eastern &amp; BBQ Cuisine</p>
-                    <p class="mb-0 text-secondary">Parit Raja, Batu Pahat, 86400 Johor, Malaysia</p>
+        <!-- ============ MAIN CONTENT ============ -->
+        <div class="main-content">
+            <!-- Mobile topbar -->
+            <header class="topbar">
+                <button class="topbar-toggle" id="sidebarToggle" aria-label="Toggle navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+                <a class="topbar-brand" href="{% url 'core:home' %}">Restoran Alkhair</a>
+
+                <!-- Cart badge on mobile -->
+                {% if not user.is_authenticated or not user.is_admin %}
+                    <a href="{% url 'orders:cart_view' %}" class="ms-auto position-relative" style="color: var(--text-main); font-size: 1.2rem;">
+                        <i class="bi bi-cart3"></i>
+                        {% if request.session.cart_count %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark" style="font-size:0.65rem;">{{ request.session.cart_count }}</span>
+                        {% endif %}
+                    </a>
+                {% endif %}
+            </header>
+
+            <!-- Flash Messages -->
+            {% if messages %}
+                <div class="px-3 px-lg-0 pt-3">
+                    <div class="page-content py-0" style="padding-bottom:0 !important;">
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <h6 class="text-white">Operating Hours</h6>
-                    <p class="mb-1">Daily: 11:00 AM – 11:30 PM</p>
-                    <p class="small text-secondary mb-0">BIK11003 Database &amp; BIK20404 Web Development Project</p>
+            {% endif %}
+
+            <!-- Page Content -->
+            <main class="page-content">
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Footer -->
+            <footer class="app-footer">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <span class="fw-semibold text-dark">Restoran Alkhair</span>
+                        <span class="mx-1">·</span>
+                        Parit Raja, Batu Pahat, 86400 Johor
+                    </div>
+                    <div class="text-end">
+                        <span>Daily: 11:00 AM – 11:30 PM</span>
+                        <span class="mx-1">·</span>
+                        <span>BIK11003 & BIK20404 Project</span>
+                    </div>
                 </div>
-            </div>
+            </footer>
         </div>
-    </footer>
+
+    </div>
 
     <!-- Bootstrap 5 JS Bundle CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <!-- Custom JavaScript -->
     <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/sidebar.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

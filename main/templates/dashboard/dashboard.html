@@ -2,17 +2,7 @@
 
 {% block title %}Admin Dashboard - Restoran Alkhair{% endblock %}
 
-{% block extra_css %}
-<style>
-    .metric-card {
-        border-radius: 8px;
-        transition: transform 0.15s ease-in-out;
-    }
-    .metric-card:hover {
-        transform: translateY(-2px);
-    }
-</style>
-{% endblock %}
+{% block extra_css %}{% endblock %}
 
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -314,11 +304,11 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 label: 'Sales (RM)',
                 data: dataValues,
-                borderColor: '#b85d19',
-                backgroundColor: 'rgba(184, 93, 25, 0.1)',
+                borderColor: '#c2410c',
+                backgroundColor: 'rgba(194, 65, 12, 0.08)',
                 fill: true,
                 tension: 0.3,
-                pointBackgroundColor: '#b85d19',
+                pointBackgroundColor: '#c2410c',
                 pointRadius: 5
             }]
         },
