@@ -42,3 +42,26 @@ This document records technical decisions, assumptions, and design rationale for
 
 - Placeholder restaurant hours are set to 11:00 AM – 11:30 PM (`OPENING_TIME = '11:00'`, `CLOSING_TIME = '23:30'`).
 - Group members will confirm exact business hours and update the environment or `settings.py`.
+
+---
+
+## 6. Session-based Shopping Cart
+
+- The shopping cart lives exclusively in the HTTP session (`request.session['cart']`).
+- Uncompleted carts are not stored in the MySQL database. This prevents database bloat from abandoned customer carts, avoids redundant database writes on every quantity increment, and complies strictly with the project requirement.
+
+---
+
+## 7. Simulated Payment Processing
+
+- No third-party payment gateway SDK or API is installed.
+- Simulated payment methods (`sim_banking`, `sim_card`, `sim_ewallet`) route through an educational simulation screen that provides "Simulate Successful Payment" and "Simulate Failed Payment" actions.
+- Credit card numbers, CVVs, expiry dates, and banking passwords are never requested or stored.
+
+---
+
+## 8. QR Dine-in Routing
+
+- The QR routing pattern is exposed at the root level `/t/<qr_token>/` as well as `/orders/t/<qr_token>/`.
+- This ensures short, clean URLs that encode easily into compact QR code matrices, improving camera readability across mobile devices.
+

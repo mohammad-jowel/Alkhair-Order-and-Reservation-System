@@ -3,8 +3,8 @@
 A full-stack Django web application for Restoran Alkhair (Parit Raja, Batu Pahat, Johor), supporting online food ordering (delivery, takeaway, QR dine-in) and table reservations.
 
 Built for university coursework:
-- **BIK11003 Database**: Relational schema design, normalization, join tables, transaction-safe queries, ORM aggregation.
-- **BIK20404 Web Development**: Dynamic web app, CRUD operations, role-based access control (RBAC), responsive Bootstrap 5 UI, session management, secure checkout and simulated payment.
+- **BIK11003 Database**: Relational schema design, normalization (3NF), join tables, transaction-safe queries, ORM aggregation.
+- **BIK20404 Web Development**: Dynamic web application (13 pages, full CRUD, role-based access control, responsive Bootstrap 5 UI, session management, secure checkout, and simulated payment).
 
 ---
 
@@ -14,7 +14,7 @@ Built for university coursework:
 - MySQL 8.0+ (running locally or in Docker)
 - `pip` and virtual environment support (`venv`)
 
-> **Note on Database Driver**: This project uses `PyMySQL` with `pymysql.install_as_MySQLdb()` configured in `main/__init__.py` instead of `mysqlclient`. This eliminates the need for C++ build tools and MySQL development headers, allowing smooth installation across Windows, Linux, and macOS.
+> **Note on Database Driver**: This project uses `PyMySQL` with `pymysql.install_as_MySQLdb()` configured in `main/main/__init__.py` instead of `mysqlclient`. This eliminates the need for OS-level C++ build tools and MySQL development headers, ensuring trouble-free installation across Windows, Linux, and macOS. `cryptography` is included to support MySQL 8's `caching_sha2_password`.
 
 ---
 
@@ -42,14 +42,14 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Step 4: Environment configuration (`.env`)
+### Step 4: Configure environment variables (`.env`)
 Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
-Open `.env` and configure your credentials:
+Ensure `.env` contains your local database credentials:
 ```env
-SECRET_KEY=your-secret-key-here
+SECRET_KEY=django-insecure-dev-key-alkhair-system
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
 SITE_BASE_URL=http://127.0.0.1:8000
@@ -63,20 +63,19 @@ DB_HOST=127.0.0.1
 DB_PORT=3307
 ```
 
-### Step 5: Database setup (MySQL via Docker or Native)
+### Step 5: Start MySQL
 If using the provided Docker container on port 3307:
 ```bash
 docker start bik11003-mysql
 ```
-Ensure the database `project_alkhair` exists.
 
-### Step 6: Apply migrations
+### Step 6: Apply database migrations
 ```bash
 python main/manage.py migrate
 ```
 
 ### Step 7: Seed demo data
-Populate initial categories, menu items, restaurant tables with QR tokens, admin account, and customer accounts:
+Populate initial categories, 26 menu items, 10 restaurant tables with QR tokens, 1 admin account, and 2 customer accounts:
 ```bash
 python main/manage.py seed_demo
 ```
@@ -92,65 +91,126 @@ QR images are saved in `main/media/qr/`.
 ```bash
 python main/manage.py runserver
 ```
-Visit `http://127.0.0.1:8000/` in your browser.
+Visit `http://127.0.0.1:8000/` in your web browser.
 
 ---
 
-## 3. Demo Credentials
+## 3. Demonstration Accounts & Logins
 
-After running `seed_demo`, use these credentials to test:
+After running `seed_demo`, use these credentials to explore:
 
-| Role | Email | Password |
-|---|---|---|
-| **Admin** | `admin@alkhair.com` | `Admin1234!` |
-| **Customer 1** | `customer1@gmail.com` | `Customer1234!` |
-| **Customer 2** | `customer2@gmail.com` | `Customer1234!` |
+| Role | Email | Password | Purpose |
+|---|---|---|---|
+| **Admin** | `admin@alkhair.com` | `Admin1234!` | Dashboard, menu CRUD, manage orders, confirm reservations |
+| **Customer 1** | `customer1@gmail.com` | `Customer1234!` | Ordering, QR dine-in, reservations, profile editing |
+| **Customer 2** | `customer2@gmail.com` | `Customer1234!` | Secondary customer account |
 
 ---
 
-## 4. Running Tests
+## 4. Running Automated Tests
 
-Run the full automated test suite:
+Run the complete 39-test automated test suite across all 6 applications:
 ```bash
-python main/manage.py test
+python main/manage.py test core accounts menu orders reservations dashboard
 ```
 
+All tests execute against an isolated test database and verify:
+- Registration, password hashing, and generic login error handling
+- Role-based access control (`admin_required` blocking customers with 403)
+- Ownership security (customers receiving 404 on other customers' orders and bookings)
+- Atomic server-side order total computation and unit price freezing
+- QR token validation, session persistence, and dine-in table assignment
+- Date, operating hours, and party size constraints on reservations
+- Deleting ordered menu items being blocked by database protection
+
 ---
 
-## 5. Mobile Phone Demo (QR Dine-in)
+## 5. Mobile Phone Demo (QR Dine-in over Local Wi-Fi)
 
-To test scanning QR codes with a physical mobile phone on the same Wi-Fi network:
-1. Find your machine's local IP address (e.g. `192.168.1.50`).
-2. Update `.env`:
+To test scanning QR codes with a physical smartphone on the same local network:
+1. Find your computer's local IP address (e.g. `192.168.1.50` via `ip a` on Linux or `ipconfig` on Windows).
+2. Edit `.env`:
    ```env
    ALLOWED_HOSTS=127.0.0.1,localhost,192.168.1.50
    SITE_BASE_URL=http://192.168.1.50:8000
    ```
-3. Regenerate QR codes:
+3. Regenerate the QR images with the new URL:
    ```bash
    python main/manage.py generate_table_qr
    ```
-4. Start the server binding to `0.0.0.0`:
+4. Start the Django server binding to `0.0.0.0`:
    ```bash
    python main/manage.py runserver 0.0.0.0:8000
    ```
-5. Scan any generated QR code from `main/media/qr/` using your phone camera.
+5. Scan any generated QR code image in `main/media/qr/` using your phone camera.
 
 ---
 
-## 6. PythonAnywhere Deployment (SQLite Fallback)
+## 6. PythonAnywhere Deployment Guide (with SQLite Fallback)
 
-On platforms such as PythonAnywhere free tier where external MySQL might not be accessible:
-1. Set `DB_ENGINE=sqlite` in `.env` or the web app environment.
-2. In `settings.py`, SQLite automatically engages using `db.sqlite3`.
-3. Run `python manage.py migrate` and `python manage.py collectstatic`.
+On platforms such as PythonAnywhere free tier where external MySQL ports cannot be connected:
+
+### Step 1: Upload and extract code
+Open a Bash console on PythonAnywhere and clone your repository into `/home/<username>/prototype`.
+
+### Step 2: Create virtual environment & install requirements
+```bash
+cd /home/<username>/prototype
+python3.10 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Step 3: Configure `.env` with SQLite fallback
+Create `/home/<username>/prototype/.env`:
+```env
+SECRET_KEY=generate-a-strong-secret-key-for-production
+DEBUG=False
+ALLOWED_HOSTS=<username>.pythonanywhere.com
+SITE_BASE_URL=https://<username>.pythonanywhere.com
+DB_ENGINE=sqlite
+```
+*(When `DB_ENGINE=sqlite` is set, `settings.py` automatically uses `db.sqlite3`.)*
+
+### Step 4: Run migrations, seed demo, and collect static files
+```bash
+python main/manage.py migrate
+python main/manage.py seed_demo
+python main/manage.py generate_table_qr
+python main/manage.py collectstatic --noinput
+```
+
+### Step 5: Configure PythonAnywhere Web Tab
+1. In the **Web** tab, select **Add a new web app** -> **Manual configuration** -> **Python 3.10**.
+2. Set **Source code**: `/home/<username>/prototype/main`
+3. Set **Working directory**: `/home/<username>/prototype/main`
+4. Set **Virtualenv**: `/home/<username>/prototype/venv`
+5. Under **Static files**, configure two mappings:
+   - URL: `/static/` -> Directory: `/home/<username>/prototype/main/staticfiles`
+   - URL: `/media/` -> Directory: `/home/<username>/prototype/main/media`
+6. Edit the **WSGI configuration file**:
+   ```python
+   import os
+   import sys
+
+   path = '/home/<username>/prototype/main'
+   if path not in sys.path:
+       sys.path.insert(0, path)
+
+   os.environ['DJANGO_SETTINGS_MODULE'] = 'main.settings'
+
+   from django.core.wsgi import get_wsgi_application
+   application = get_wsgi_application()
+   ```
+7. Click the green **Reload <username>.pythonanywhere.com** button.
 
 ---
 
-## 7. Configuration Notice for Group Members
+## 7. Placeholder Items to Finalize (For Group Members)
 
-The following items are placeholders and should be verified and finalized by the group:
+The following items are placeholders and should be confirmed with the restaurant:
 - **Operating Hours**: Configured to `11:00` to `23:30` in `settings.py` (`OPENING_TIME` and `CLOSING_TIME`).
 - **Contact Details & Address**: Restoran Alkhair, Parit Raja, Batu Pahat, Johor.
-- **Menu Photos**: Replace placeholders in `static/img/` with genuine photographs taken at the restaurant.
+- **Menu Photos**: Replace SVG placeholders in `static/img/` with genuine photographs taken at the restaurant.
 - **Menu Prices**: Seeded from preliminary menu photo; verify with restaurant staff.
+- **Two Unreadable Menu Items**: Marked with `TODO` in `docs/DECISIONS.md`.
