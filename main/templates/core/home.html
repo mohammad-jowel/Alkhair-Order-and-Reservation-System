@@ -1,64 +1,68 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Restoran Alkhair - Authentic Middle-Eastern &amp; BBQ Cuisine{% endblock %}
+{% block title %}Restoran Alkhair - Middle-Eastern Cuisine &amp; Charcoal Grills{% endblock %}
 
 {% block content %}
-<div class="row g-4 align-items-center mb-5">
+<div class="row g-4 align-items-center mb-5 pt-2">
     <div class="col-lg-7">
-        <span class="badge bg-warning text-dark mb-2 px-3 py-2 fs-6">Welcome to Alkhair</span>
+        <div class="d-inline-flex align-items-center gap-2 px-2 py-1 rounded bg-light border text-muted small fw-semibold mb-3">
+            <span class="d-inline-block rounded-circle bg-success" style="width: 8px; height: 8px;"></span>
+            Restoran Alkhair • Parit Raja, Johor
+        </div>
+
         <h1 class="display-5 fw-bold mb-3 text-dark">Fresh Charcoal Grills &amp; Authentic Flavors</h1>
-        <p class="lead text-muted mb-4">
+        <p class="lead text-muted mb-4 fs-6">
             Serving traditional Middle-Eastern cuisine, slow-roasted lamb shank, authentic shawarma wraps, and tender charcoal kebabs in Parit Raja, Johor.
         </p>
 
         <!-- Operating Hours Card -->
-        <div class="card p-3 mb-4 bg-light border-0 shadow-sm">
+        <div class="card p-3 mb-4 bg-white border shadow-sm">
             <div class="d-flex align-items-center gap-3">
-                <i class="bi bi-clock-history fs-2 text-primary"></i>
+                <i class="bi bi-clock text-danger fs-3"></i>
                 <div>
-                    <h6 class="mb-0 fw-bold">Operating Hours</h6>
-                    <p class="mb-0 text-muted">Daily: {{ opening_time }} to {{ closing_time }} (Placeholders — group to verify)</p>
+                    <div class="fw-bold text-dark">Operating Hours</div>
+                    <div class="text-muted small">Daily: {{ opening_time }} – {{ closing_time }} (Dine-in, Takeaway &amp; Delivery)</div>
                 </div>
             </div>
         </div>
 
-        <div class="d-flex flex-wrap gap-3">
-            <a href="{% url 'menu:menu_list' %}" class="btn btn-primary btn-lg">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'menu:menu_list' %}" class="btn btn-primary px-4">
                 <i class="bi bi-journal-text me-2"></i> View Menu &amp; Order
             </a>
-            <a href="{% url 'reservations:reservation_list' %}" class="btn btn-outline-secondary btn-lg">
+            <a href="{% url 'reservations:reservation_list' %}" class="btn btn-outline-secondary px-4">
                 <i class="bi bi-calendar2-check me-2"></i> Book a Table
             </a>
         </div>
     </div>
 
     <div class="col-lg-5">
-        <div class="card border-0 shadow overflow-hidden">
-            <img src="{% static 'img/hero_restaurant.svg' %}" alt="Restoran Alkhair Storefront &amp; Dining Room" class="img-fluid w-100" style="object-fit: cover; max-height: 380px;">
+        <div class="card border shadow-sm overflow-hidden">
+            <img src="{% static 'img/hero_restaurant.svg' %}" alt="Restoran Alkhair Restaurant Dining Room" class="img-fluid w-100" style="object-fit: cover; max-height: 380px;">
         </div>
     </div>
 </div>
 
-<!-- Accessible Multimedia Element: Sizzling Charcoal Flame & Grill Showcase -->
+<!-- Accessible Multimedia Element: Charcoal Hearth Live -->
 <section class="mb-5" aria-labelledby="multimedia-heading">
-    <div class="multimedia-grill-box shadow-sm">
+    <div class="multimedia-grill-box">
         <div class="row align-items-center g-3">
             <div class="col-md-8">
-                <div class="d-flex align-items-center gap-3 mb-2">
-                    <span class="flame-animation" role="img" aria-label="Animated charcoal flame pulsing"></span>
-                    <h3 id="multimedia-heading" class="h4 mb-0 text-warning">Fresh Charcoal Hearth Live</h3>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="flame-animation" role="img" aria-label="Live charcoal grill status indicator"></span>
+                    <h3 id="multimedia-heading" class="h5 mb-0 text-white">Charcoal Grill Live</h3>
                 </div>
-                <p class="mb-0 text-light">
-                    Every skewer is seasoned with authentic Levant spices and prepared on genuine charcoal embers for unmatched smokiness.
+                <p class="mb-0 text-light small opacity-75">
+                    Freshly seasoned skewers prepared on genuine charcoal embers for authentic smokiness.
                 </p>
                 <!-- Text fallback for accessibility / screen readers -->
                 <p class="visually-hidden">
-                    Multimedia presentation: Looping animation of a warm charcoal grill flame representing live barbeque preparation.
+                    Multimedia presentation: Live charcoal hearth indicator showing active barbeque preparation.
                 </p>
             </div>
             <div class="col-md-4 text-md-end">
-                <a href="{% url 'menu:menu_list' %}" class="btn btn-warning fw-bold text-dark">Explore BBQ Menu</a>
+                <a href="{% url 'menu:menu_list' %}" class="btn btn-light btn-sm fw-semibold">Browse BBQ Dishes</a>
             </div>
         </div>
     </div>
@@ -66,38 +70,61 @@
 
 <!-- Featured Categories / Specialties -->
 <section class="mb-5">
-    <div class="text-center mb-4">
-        <h2 class="h3 fw-bold">House Specialties</h2>
-        <p class="text-muted">Handcrafted daily using traditional recipes</p>
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h2 class="h4 fw-bold mb-1">House Specialties</h2>
+            <p class="text-muted small mb-0">Popular selections from our authentic Middle-Eastern menu</p>
+        </div>
+        <a href="{% url 'menu:menu_list' %}" class="text-primary fw-semibold small text-decoration-none">
+            View All Dishes <i class="bi bi-arrow-right"></i>
+        </a>
     </div>
 
     <div class="row g-4">
         <div class="col-md-4">
-            <div class="card h-100">
-                <img src="{% static 'img/kebab_platter.svg' %}" alt="Charcoal Grilled Beef and Chicken Kebab Platter" class="card-img-top">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold">Charcoal Kebabs</h5>
-                    <p class="card-text text-muted">Juicy skewers of seasoned minced beef and chicken, served with fresh flatbread or spiced rice.</p>
+            <div class="card dish-card h-100 shadow-sm">
+                <div class="dish-img-container">
+                    <img src="{% static 'img/kebab_platter.svg' %}" alt="Charcoal Grilled Beef and Chicken Kebab Platter">
+                </div>
+                <div class="card-body d-flex flex-column p-3">
+                    <h5 class="fw-bold fs-6 mb-1">Charcoal Kebabs</h5>
+                    <p class="text-muted small flex-grow-1 mb-3">Juicy skewers of seasoned minced beef and chicken, served with flatbread or spiced rice.</p>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <span class="text-muted small">From RM 18.00</span>
+                        <a href="{% url 'menu:menu_list' %}" class="btn btn-sm btn-outline-primary py-1 px-3">Order</a>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100">
-                <img src="{% static 'img/shawarma_wrap.svg' %}" alt="Authentic Chicken and Beef Shawarma Wrap" class="card-img-top">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold">Authentic Shawarma</h5>
-                    <p class="card-text text-muted">Slow-roasted sliced meat with homemade garlic sauce and pickled vegetables rolled in warm bread.</p>
+            <div class="card dish-card h-100 shadow-sm">
+                <div class="dish-img-container">
+                    <img src="{% static 'img/shawarma_wrap.svg' %}" alt="Authentic Chicken and Beef Shawarma Wrap">
+                </div>
+                <div class="card-body d-flex flex-column p-3">
+                    <h5 class="fw-bold fs-6 mb-1">Authentic Shawarma</h5>
+                    <p class="text-muted small flex-grow-1 mb-3">Slow-roasted sliced meat with homemade garlic sauce and pickled vegetables rolled in warm bread.</p>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <span class="text-muted small">From RM 7.00</span>
+                        <a href="{% url 'menu:menu_list' %}" class="btn btn-sm btn-outline-primary py-1 px-3">Order</a>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card h-100">
-                <img src="{% static 'img/lamb_shank.svg' %}" alt="Tender Slow-Cooked Lamb Shank with Mandy Rice" class="card-img-top">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold">Lamb Shank &amp; Mandy</h5>
-                    <p class="card-text text-muted">Tender fall-off-the-bone lamb shank slow-braised to perfection and served on aromatic rice.</p>
+            <div class="card dish-card h-100 shadow-sm">
+                <div class="dish-img-container">
+                    <img src="{% static 'img/lamb_shank.svg' %}" alt="Tender Slow-Cooked Lamb Shank with Mandy Rice">
+                </div>
+                <div class="card-body d-flex flex-column p-3">
+                    <h5 class="fw-bold fs-6 mb-1">Lamb Shank &amp; Mandy</h5>
+                    <p class="text-muted small flex-grow-1 mb-3">Tender slow-braised lamb shank seasoned with house spices and served on aromatic rice.</p>
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <span class="text-muted small">RM 35.00</span>
+                        <a href="{% url 'menu:menu_list' %}" class="btn btn-sm btn-outline-primary py-1 px-3">Order</a>
+                    </div>
                 </div>
             </div>
         </div>
