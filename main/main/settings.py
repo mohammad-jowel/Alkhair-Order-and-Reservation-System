@@ -23,7 +23,7 @@ ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '127.0.0.1,l
 
 SITE_BASE_URL = os.environ.get('SITE_BASE_URL', 'http://127.0.0.1:8000')
 
-# Restaurant operating hours
+# Restaurant operating hours (Placeholders - group to confirm)
 OPENING_TIME = os.environ.get('OPENING_TIME', '11:00')
 CLOSING_TIME = os.environ.get('CLOSING_TIME', '23:30')
 
@@ -35,6 +35,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Project apps
+    'core',
+    'accounts',
+    'menu',
+    'orders',
+    'reservations',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
@@ -65,6 +72,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'main.wsgi.application'
+
+# Custom User Model
+AUTH_USER_MODEL = 'accounts.Account'
+
+# Login / Logout routing
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'
 
 # Database configuration
 DB_ENGINE = os.environ.get('DB_ENGINE', 'mysql').lower()
