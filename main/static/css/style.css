@@ -1,0 +1,196 @@
+/* Restoran Alkhair - Main Stylesheet */
+
+:root {
+    --primary-color: #b85d19;
+    --primary-hover: #9c4c11;
+    --secondary-color: #2b3a42;
+    --dark-bg: #1c2327;
+    --light-bg: #f9f8f6;
+    --card-bg: #ffffff;
+    --text-main: #212529;
+    --text-muted: #596167;
+    --border-color: #e2ded7;
+    --success-color: #1e7e34;
+    --warning-color: #d39e00;
+    --danger-color: #bd2130;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-main);
+    background-color: var(--light-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure focus outlines for accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Navigation bar */
+.navbar-custom {
+    background-color: var(--secondary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.navbar-custom .navbar-brand {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+.navbar-custom .nav-link {
+    color: #e5e8ea;
+    font-weight: 500;
+    padding: 0.5rem 0.85rem;
+    border-radius: 4px;
+}
+
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link:focus {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.navbar-custom .nav-link.active {
+    color: #ffffff;
+    background-color: var(--primary-color);
+}
+
+/* Table Badge in Navbar */
+.table-badge {
+    background-color: #f7ca18;
+    color: #212529;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.table-badge a {
+    color: #bd2130;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+/* Main Content Area */
+main.container {
+    flex: 1 0 auto;
+    padding-top: 1.5rem;
+    padding-bottom: 3rem;
+}
+
+/* Cards & Containers */
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+    background-color: var(--card-bg);
+}
+
+.card-header {
+    background-color: #f3f0ea;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+}
+
+/* Buttons */
+.btn {
+    min-height: 44px; /* Touch target accessibility */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 0.5rem 1.2rem;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+    color: #ffffff;
+}
+
+/* Horizontal Scrolling Table for Responsive Design */
+.table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+}
+
+.table-responsive-wrapper table {
+    margin-bottom: 0;
+}
+
+/* Multimedia element: Animated Charcoal Grill with fallback */
+.multimedia-grill-box {
+    background-color: var(--dark-bg);
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    border-left: 5px solid var(--primary-color);
+}
+
+.flame-animation {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    background: radial-gradient(circle, #ffcc00 20%, #ff6600 60%, transparent 80%);
+    border-radius: 50% 50% 20% 20%;
+    animation: flamePulse 2s infinite alternate ease-in-out;
+}
+
+@keyframes flamePulse {
+    0% { transform: scale(0.9) translateY(0); opacity: 0.8; }
+    100% { transform: scale(1.15) translateY(-3px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .flame-animation {
+        animation: none;
+    }
+}
+
+/* Footer */
+footer {
+    flex-shrink: 0;
+    background-color: var(--dark-bg);
+    color: #adb5bd;
+    border-top: 3px solid var(--primary-color);
+    padding: 1.5rem 0;
+    font-size: 0.9rem;
+}
+
+footer a {
+    color: #e5e8ea;
+    text-decoration: underline;
+}
+
+footer a:hover {
+    color: #ffffff;
+}
