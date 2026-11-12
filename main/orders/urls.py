@@ -12,4 +12,5 @@ urlpatterns = [
     path('order/<int:order_id>/cancel/', views.cancel_order, name='cancel_order'),
     path('manage/', views.manage_orders, name='manage_orders'),
     path('clear-table/', views.clear_table, name='clear_table'),
+    path('t/<str:qr_token>/', views.qr_table_entry, name='qr_table_entry'),
 ]

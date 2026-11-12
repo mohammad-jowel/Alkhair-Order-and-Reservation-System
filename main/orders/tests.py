@@ -170,3 +170,56 @@ class OrdersTestCase(TestCase):
         order.refresh_from_db()
         self.assertEqual(order.order_status, 'preparing')
         self.assertEqual(order.payment_status, 'paid')
+
+    def test_qr_dine_in_valid_token(self):
+        """Scanning a valid active table QR sets session and redirects to menu."""
+        table = RestaurantTable.objects.create(table_number=99, qr_token='token_table_99', is_active=True)
+        response = self.client.get(reverse('orders:qr_table_entry', args=['token_table_99']))
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('menu:menu_list'))
+        self.assertEqual(self.client.session.get('table_id'), table.table_id)
+        self.assertEqual(self.client.session.get('table_number'), 99)
+
+    def test_qr_dine_in_invalid_or_inactive_token(self):
+        """Unknown or inactive QR token redirects to menu with friendly error without setting session."""
+        inactive_table = RestaurantTable.objects.create(table_number=98, qr_token='token_inactive', is_active=False)
+        response = self.client.get(reverse('orders:qr_table_entry', args=['token_inactive']))
+        self.assertEqual(response.status_code, 302)
+        self.assertIsNone(self.client.session.get('table_id'))
+
+        response_bad = self.client.get(reverse('orders:qr_table_entry', args=['nonexistent_token']))
+        self.assertEqual(response_bad.status_code, 302)
+        self.assertIsNone(self.client.session.get('table_id'))
+
+    def test_checkout_dine_in_associates_table(self):
+        """Dine-in checkout requires active table in session and saves table_id on the order."""
+        table = RestaurantTable.objects.create(table_number=50, qr_token='token_table_50', is_active=True)
+        self.client.login(email='cust1_orders@alkhair.com', password='CustomerPassword123!')
+        
+        session = self.client.session
+        session['cart'] = {str(self.item1.item_id): 1}
+        session['table_id'] = table.table_id
+        session['table_number'] = table.table_number
+        session.save()
+
+        response = self.client.post(reverse('orders:checkout'), {
+            'order_type': 'dine_in',
+            'payment_method': 'cash',
+        })
+        self.assertEqual(response.status_code, 302)
+        order = Order.objects.filter(account=self.customer1, order_type='dine_in').first()
+        self.assertIsNotNone(order)
+        self.assertEqual(order.table, table)
+        self.assertIsNone(order.delivery_address)
+
+    def test_clear_table_removes_session(self):
+        """Clearing table removes table_id and table_number from session."""
+        session = self.client.session
+        session['table_id'] = 1
+        session['table_number'] = 1
+        session.save()
+
+        response = self.client.get(reverse('orders:clear_table'))
+        self.assertEqual(response.status_code, 302)
+        self.assertNotIn('table_id', self.client.session)
+        self.assertNotIn('table_number', self.client.session)

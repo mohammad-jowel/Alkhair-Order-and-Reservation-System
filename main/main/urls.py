@@ -8,8 +8,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from orders import views as order_views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('t/<str:qr_token>/', order_views.qr_table_entry, name='qr_table_entry'),
     path('', include('core.urls')),
     path('accounts/', include('accounts.urls')),
     path('menu/', include('menu.urls')),

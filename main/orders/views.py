@@ -19,6 +19,24 @@ from .cart import (
 )
 
 
+def qr_table_entry(request, qr_token):
+    """
+    Validate table QR token from scan.
+    Stores table_id and table_number in session, and redirects to Menu.
+    Unknown or inactive tokens show a friendly error.
+    """
+    try:
+        table = RestaurantTable.objects.get(qr_token=qr_token, is_active=True)
+        request.session['table_id'] = table.table_id
+        request.session['table_number'] = table.table_number
+        request.session.modified = True
+        messages.success(request, f'Welcome! You are seated at Table #{table.table_number}. Please choose your dishes.')
+        return redirect('menu:menu_list')
+    except RestaurantTable.DoesNotExist:
+        messages.error(request, 'This table QR code is invalid, unassigned, or inactive. Please contact restaurant staff.')
+        return redirect('menu:menu_list')
+
+
 def cart_view(request):
     """
     Shopping cart view: supports adding, updating, removing items,
