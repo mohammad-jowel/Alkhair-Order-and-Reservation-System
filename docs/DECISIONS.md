@@ -1,0 +1,44 @@
+# Architectural and Implementation Decisions
+
+This document records technical decisions, assumptions, and design rationale for the Alkhair Order and Reservation System.
+
+---
+
+## 1. Relational Database Schema & Primary Keys
+
+- **Explicit Primary Keys**: Every table explicitly defines its primary key (`account_id`, `category_id`, `item_id`, `table_id`, `order_id`, `reservation_id`) using `models.AutoField(primary_key=True)` matching the project specification and ERD.
+- **Order Item Join Table**:
+  - The ERD presents `order_item` as a join table between `orders` and `menu_item` with a composite primary key `(order_id, item_id)`.
+  - In Django ORM, native composite primary keys complicate admin integration, inline forms, and standard ModelForm conventions.
+  - Therefore, `order_item` is implemented with an explicit surrogate auto-increment primary key `order_item_id = models.AutoField(primary_key=True)`, combined with a `UniqueConstraint(fields=['order', 'item'], name='unique_order_item')` and foreign key indexes. This strictly guarantees the "one row per dish per order" business constraint at the database engine level without breaking Django admin or ORM tooling.
+- **Monetary Values**: All prices and totals use `DecimalField(max_digits=10, decimal_places=2)`. Floats are strictly prohibited to prevent IEEE-754 rounding inaccuracies in currency calculations.
+
+---
+
+## 2. Database Driver: PyMySQL
+
+- Django defaults to `mysqlclient`, which requires OS-level C++ compilers and MySQL client developer libraries (`libmysqlclient-dev` / Visual Studio C++ Build Tools).
+- To ensure students and lecturers on Windows, macOS, and Linux can run `pip install -r requirements.txt` without compiler errors, `PyMySQL` is used in conjunction with `pymysql.install_as_MySQLdb()` in `main/__init__.py`.
+- `cryptography` is included in `requirements.txt` to support MySQL 8's default authentication method (`caching_sha2_password`).
+
+---
+
+## 3. Environment Variables & Fallback
+
+- The application uses `python-dotenv` to load `.env`.
+- To support both local MySQL (running in Docker or native host on port 3307/3306) and deployment targets without MySQL (such as PythonAnywhere free tier), `DB_ENGINE` can be toggled between `mysql` and `sqlite`.
+
+---
+
+## 4. Unreadable Menu Items (TODO)
+
+- The Alkhair menu photograph displayed two plate dishes priced at RM15 and RM12 where the item names were obscured.
+- **TODO**: Group members must verify the exact dish names with Restoran Alkhair staff and update `seed_demo` or add them via the Admin Manage Menu interface.
+- "Extra cheese" (RM1 on shawarma) is noted as an add-on in the menu, but was excluded from the initial schema to keep the relational model minimal and strictly adhere to project guidelines.
+
+---
+
+## 5. Operating Hours and Contact Information
+
+- Placeholder restaurant hours are set to 11:00 AM – 11:30 PM (`OPENING_TIME = '11:00'`, `CLOSING_TIME = '23:30'`).
+- Group members will confirm exact business hours and update the environment or `settings.py`.

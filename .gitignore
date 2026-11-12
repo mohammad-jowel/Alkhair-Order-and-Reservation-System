@@ -1,4 +1,16 @@
+# Environments
 venv/
+.env
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+
+# Databases
+*.sqlite3
 db.sqlite3
+
+# Media and Static
+media/
+staticfiles/
