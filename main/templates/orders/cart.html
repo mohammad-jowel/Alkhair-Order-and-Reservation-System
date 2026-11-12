@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart &amp; Checkout - Restoran Alkhair{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="display-6 fw-bold mb-1"><i class="bi bi-cart3 text-primary me-2"></i>Your Order</h1>
+    <p class="text-muted mb-0">Review selected dishes and complete your order</p>
+</div>
+
+{% if cart_items %}
+    <div class="row g-4 mb-5">
+        <!-- Cart Items Review Column -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Order Items ({{ cart_items|length }})</h5>
+                    <form method="post" action="{% url 'orders:cart_view' %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="clear">
+                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" data-confirm="Are you sure you want to clear your cart?">
+                            <i class="bi bi-trash"></i> Clear All
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive-wrapper">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Dish</th>
+                                    <th style="width: 140px;">Quantity</th>
+                                    <th>Price</th>
+                                    <th>Subtotal</th>
+                                    <th style="width: 50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ci in cart_items %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">{{ ci.item.item_name }}</div>
+                                            <div class="text-muted small">{{ ci.item.category.category_name }}</div>
+                                        </td>
+                                        <td>
+                                            <form method="post" action="{% url 'orders:cart_view' %}" class="d-flex align-items-center gap-1">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="update">
+                                                <input type="hidden" name="item_id" value="{{ ci.item.item_id }}">
+                                                <div class="input-group input-group-sm cart-quantity-control" style="width: 110px;">
+                                                    <button type="button" class="btn btn-outline-secondary btn-qty-minus">-</button>
+                                                    <input type="number" name="quantity" value="{{ ci.quantity }}" min="1" max="99" class="form-control text-center px-1">
+                                                    <button type="button" class="btn btn-outline-secondary btn-qty-plus">+</button>
+                                                </div>
+                                                <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-1" title="Update quantity">
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                        <td>RM {{ ci.unit_price|floatformat:2 }}</td>
+                                        <td class="fw-bold text-dark">RM {{ ci.subtotal|floatformat:2 }}</td>
+                                        <td class="text-end">
+                                            <form method="post" action="{% url 'orders:cart_view' %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="remove">
+                                                <input type="hidden" name="item_id" value="{{ ci.item.item_id }}">
+                                                <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Remove item">
+                                                    <i class="bi bi-x-circle fs-5"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-light py-3 d-flex justify-content-between align-items-center">
+                    <span class="text-muted">Prices calculated live from database</span>
+                    <div class="fs-5 fw-bold">
+                        Total Amount: <span class="text-primary">RM {{ total_amount|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Add More Dishes
+            </a>
+        </div>
+
+        <!-- Checkout Form Column -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-credit-card text-primary me-2"></i>Checkout &amp; Delivery</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'orders:checkout' %}" novalidate>
+                            {% csrf_token %}
+
+                            <!-- Order Type Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Order Type</label>
+                                <div class="d-flex flex-column gap-2">
+                                    {% for choice in checkout_form.order_type %}
+                                        <div class="form-check p-2 border rounded">
+                                            {{ choice.tag }}
+                                            <label class="form-check-label fw-semibold" for="{{ choice.id_for_label }}">
+                                                {{ choice.choice_label }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if checkout_form.order_type.errors %}
+                                    <div class="text-danger small mt-1">{{ checkout_form.order_type.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Delivery Address (required if delivery) -->
+                            <div class="mb-4" id="deliveryAddressGroup">
+                                <label for="{{ checkout_form.delivery_address.id_for_label }}" class="form-label fw-bold">Delivery Address</label>
+                                {{ checkout_form.delivery_address }}
+                                <div class="form-text small">Required for delivery within Parit Raja area.</div>
+                                {% if checkout_form.delivery_address.errors %}
+                                    <div class="text-danger small mt-1">{{ checkout_form.delivery_address.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Payment Method Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Payment Method</label>
+                                <div class="d-flex flex-column gap-2">
+                                    {% for choice in checkout_form.payment_method %}
+                                        <div class="form-check p-2 border rounded">
+                                            {{ choice.tag }}
+                                            <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                {{ choice.choice_label }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if checkout_form.payment_method.errors %}
+                                    <div class="text-danger small mt-1">{{ checkout_form.payment_method.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Total & Submit -->
+                            <div class="p-3 bg-light rounded mb-4">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Subtotal</span>
+                                    <span>RM {{ total_amount|floatformat:2 }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Delivery / Service Fee</span>
+                                    <span class="text-success">FREE</span>
+                                </div>
+                                <hr class="my-2">
+                                <div class="d-flex justify-content-between fw-bold fs-5">
+                                    <span>Total to Pay</span>
+                                    <span class="text-primary">RM {{ total_amount|floatformat:2 }}</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-3 fs-5">
+                                <i class="bi bi-shield-check me-2"></i> Place Order (RM {{ total_amount|floatformat:2 }})
+                            </button>
+                        </form>
+                    {% else %}
+                        <!-- Anonymous User Callout -->
+                        <div class="text-center py-4">
+                            <i class="bi bi-person-lock fs-1 text-primary mb-3 d-block"></i>
+                            <h5 class="fw-bold mb-2">Account Required to Order</h5>
+                            <p class="text-muted small mb-4">
+                                Please sign in or register a customer account to confirm your delivery address and complete checkout.
+                            </p>
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'accounts:login' %}?next={% url 'orders:cart_view' %}" class="btn btn-primary">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i> Log In to Checkout
+                                </a>
+                                <a href="{% url 'accounts:register' %}?next={% url 'orders:cart_view' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-person-plus me-1"></i> Register New Account
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <!-- Empty Cart State -->
+    <div class="card p-5 text-center shadow-sm border-0 my-4">
+        <div class="py-4">
+            <i class="bi bi-cart-x fs-1 text-muted mb-3 d-block"></i>
+            <h3 class="h4 fw-bold">Your Cart is Currently Empty</h3>
+            <p class="text-muted mb-4">Explore our authentic barbecue, kebabs, and shawarmas to start an order.</p>
+            <a href="{% url 'menu:menu_list' %}" class="btn btn-primary">
+                <i class="bi bi-journal-text me-1"></i> Browse Alkhair Menu
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

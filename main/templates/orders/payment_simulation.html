@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Simulate Payment - Order #{{ order.order_id }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-7 col-lg-6">
+        <div class="card shadow border-0 overflow-hidden">
+            <!-- Distinct Demonstration Banner as required -->
+            <div class="bg-warning text-dark p-3 text-center fw-bold">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                This is a demonstration. No real payment is made.
+            </div>
+
+            <div class="card-body p-4 text-center">
+                <h2 class="h4 fw-bold mb-3">Simulated Payment Gateway</h2>
+                <p class="text-muted small mb-4">
+                    Testing payment processing for <strong>Order #{{ order.order_id }}</strong> via <strong>{{ order.get_payment_method_display }}</strong>.
+                </p>
+
+                <div class="card bg-light border-0 p-3 mb-4">
+                    <div class="text-muted small">Total Payable Amount</div>
+                    <div class="display-6 fw-bold text-primary">RM {{ order.total_amount|floatformat:2 }}</div>
+                    <div class="text-muted small mt-1">Order Type: {{ order.get_order_type_display }}</div>
+                </div>
+
+                {% if order.payment_status == 'failed' %}
+                    <div class="alert alert-danger mb-4">
+                        <i class="bi bi-x-circle-fill me-1"></i> Previous simulation failed. You can retry the payment simulation or switch to cash.
+                    </div>
+                {% endif %}
+
+                <div class="d-grid gap-3">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="simulation_result" value="success">
+                        <button type="submit" class="btn btn-success btn-lg w-100 py-3">
+                            <i class="bi bi-check-circle me-2"></i> Simulate Successful Payment
+                        </button>
+                    </form>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="simulation_result" value="fail">
+                        <button type="submit" class="btn btn-outline-danger w-100 py-2">
+                            <i class="bi bi-x-octagon me-2"></i> Simulate Failed Payment
+                        </button>
+                    </form>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="simulation_result" value="switch_to_cash">
+                        <button type="submit" class="btn btn-outline-secondary w-100 py-2">
+                            <i class="bi bi-cash-stack me-2"></i> Switch to Cash on Delivery / Counter
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card-footer bg-light text-center small text-muted py-3">
+                No credit card, CVV, or banking credentials are ever accepted or recorded.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

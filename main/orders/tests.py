@@ -1,3 +1,172 @@
-from django.test import TestCase
+from decimal import Decimal
+from django.test import TestCase, Client
+from django.urls import reverse
+from accounts.models import Account
+from menu.models import MenuCategory, MenuItem
+from orders.models import Order, OrderItem, RestaurantTable
 
-# Create your tests here.
+
+class OrdersTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.admin = Account.objects.create_superuser(
+            email='admin_orders@alkhair.com',
+            password='AdminPassword123!',
+            full_name='Orders Admin'
+        )
+        self.customer1 = Account.objects.create_user(
+            email='cust1_orders@alkhair.com',
+            password='CustomerPassword123!',
+            full_name='Customer One',
+            phone='+60111111111',
+            address='123 Parit Raja'
+        )
+        self.customer2 = Account.objects.create_user(
+            email='cust2_orders@alkhair.com',
+            password='CustomerPassword123!',
+            full_name='Customer Two',
+            phone='+60222222222',
+            address='456 Batu Pahat'
+        )
+        self.category = MenuCategory.objects.create(category_name='Grills')
+        self.item1 = MenuItem.objects.create(
+            category=self.category,
+            item_name='Beef Shawarma',
+            description='Tasty shawarma',
+            price=Decimal('15.00'),
+            is_available=True
+        )
+        self.item2 = MenuItem.objects.create(
+            category=self.category,
+            item_name='Chicken Kebab',
+            description='Grilled skewer',
+            price=Decimal('18.00'),
+            is_available=True
+        )
+
+    def test_cart_session_operations(self):
+        """Test adding, updating, and clearing items in session cart."""
+        # Add item1
+        response = self.client.post(reverse('orders:cart_view'), {
+            'action': 'add',
+            'item_id': self.item1.item_id,
+            'quantity': 2,
+        })
+        self.assertEqual(response.status_code, 302)
+        cart = self.client.session.get('cart', {})
+        self.assertEqual(cart.get(str(self.item1.item_id)), 2)
+
+        # Update item1
+        response = self.client.post(reverse('orders:cart_view'), {
+            'action': 'update',
+            'item_id': self.item1.item_id,
+            'quantity': 3,
+        })
+        self.assertEqual(response.status_code, 302)
+        cart = self.client.session.get('cart', {})
+        self.assertEqual(cart.get(str(self.item1.item_id)), 3)
+
+        # Remove item1
+        response = self.client.post(reverse('orders:cart_view'), {
+            'action': 'remove',
+            'item_id': self.item1.item_id,
+        })
+        self.assertEqual(response.status_code, 302)
+        cart = self.client.session.get('cart', {})
+        self.assertNotIn(str(self.item1.item_id), cart)
+
+    def test_checkout_server_side_total_and_unit_price(self):
+        """Checkout calculates total on the server and freezes unit_price into order_item."""
+        self.client.login(email='cust1_orders@alkhair.com', password='CustomerPassword123!')
+        
+        # Put 2 items in cart (2x item1 @ 15.00 = 30.00, 1x item2 @ 18.00 = 18.00, total = 48.00)
+        session = self.client.session
+        session['cart'] = {str(self.item1.item_id): 2, str(self.item2.item_id): 1}
+        session.save()
+
+        response = self.client.post(reverse('orders:checkout'), {
+            'order_type': 'takeaway',
+            'payment_method': 'cash',
+        })
+        self.assertEqual(response.status_code, 302)
+
+        order = Order.objects.filter(account=self.customer1).first()
+        self.assertIsNotNone(order)
+        self.assertEqual(order.total_amount, Decimal('48.00'))
+        self.assertEqual(order.order_status, 'pending')
+        self.assertEqual(order.payment_status, 'pending')
+
+        # Check OrderItem records and unit prices
+        items = order.items.all()
+        self.assertEqual(items.count(), 2)
+        oi1 = items.get(item=self.item1)
+        self.assertEqual(oi1.unit_price, Decimal('15.00'))
+        self.assertEqual(oi1.quantity, 2)
+
+    def test_delivery_order_requires_address(self):
+        """Delivery orders fail validation if address is blank."""
+        self.client.login(email='cust1_orders@alkhair.com', password='CustomerPassword123!')
+        session = self.client.session
+        session['cart'] = {str(self.item1.item_id): 1}
+        session.save()
+
+        response = self.client.post(reverse('orders:checkout'), {
+            'order_type': 'delivery',
+            'delivery_address': '', # empty
+            'payment_method': 'cash',
+        })
+        # Should redirect back with error message and NOT create order
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Order.objects.filter(account=self.customer1).exists())
+
+    def test_customer_cannot_view_another_customer_order(self):
+        """Customer receives 404 when trying to view someone else's order."""
+        order = Order.objects.create(
+            account=self.customer1,
+            order_type='takeaway',
+            order_status='pending',
+            payment_method='cash',
+            payment_status='pending',
+            total_amount=Decimal('15.00')
+        )
+        self.client.login(email='cust2_orders@alkhair.com', password='CustomerPassword123!')
+        response = self.client.get(reverse('orders:order_detail', args=[order.order_id]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_cancel_pending_order_sets_payment_not_required(self):
+        """Customer can cancel pending order; unpaid order gets payment_status = not_required."""
+        order = Order.objects.create(
+            account=self.customer1,
+            order_type='takeaway',
+            order_status='pending',
+            payment_method='cash',
+            payment_status='pending',
+            total_amount=Decimal('15.00')
+        )
+        self.client.login(email='cust1_orders@alkhair.com', password='CustomerPassword123!')
+        response = self.client.post(reverse('orders:cancel_order', args=[order.order_id]))
+        self.assertEqual(response.status_code, 302)
+        order.refresh_from_db()
+        self.assertEqual(order.order_status, 'cancelled')
+        self.assertEqual(order.payment_status, 'not_required')
+
+    def test_admin_manage_orders(self):
+        """Admin can view and update order status."""
+        order = Order.objects.create(
+            account=self.customer1,
+            order_type='takeaway',
+            order_status='pending',
+            payment_method='cash',
+            payment_status='pending',
+            total_amount=Decimal('15.00')
+        )
+        self.client.login(email='admin_orders@alkhair.com', password='AdminPassword123!')
+        response = self.client.post(reverse('orders:manage_orders'), {
+            'order_id': order.order_id,
+            'order_status': 'preparing',
+            'payment_status': 'paid',
+        })
+        self.assertEqual(response.status_code, 302)
+        order.refresh_from_db()
+        self.assertEqual(order.order_status, 'preparing')
+        self.assertEqual(order.payment_status, 'paid')
