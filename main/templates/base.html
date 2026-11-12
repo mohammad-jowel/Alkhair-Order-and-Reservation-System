@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Restoran Alkhair - Middle-Eastern Cuisine{% endblock %}</title>
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Inter (Clean Modern Sans-Serif) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,125 +24,156 @@
         <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
             <a class="sidebar-brand" href="{% url 'core:home' %}">
                 <span class="brand-icon"><i class="bi bi-fire"></i></span>
-                <span>Restoran Alkhair</span>
+                <div>
+                    <div class="brand-title">Restoran Alkhair</div>
+                    <div class="brand-subtitle">Middle-Eastern &amp; BBQ</div>
+                </div>
             </a>
 
-            <!-- Active Table Badge (Dine-in QR) -->
+            <!-- Active Table Badge (Dine-in QR Session) -->
             {% if request.session.table_number %}
                 <div class="sidebar-table-badge">
-                    <i class="bi bi-geo-alt-fill"></i>
-                    Table #{{ request.session.table_number }}
+                    <span><i class="bi bi-geo-alt-fill me-1"></i> Table #{{ request.session.table_number }}</span>
                     <a href="{% url 'orders:clear_table' %}" title="Clear Table" aria-label="Clear active dining table">&times;</a>
                 </div>
             {% endif %}
 
-            <!-- Public Navigation -->
-            <nav class="sidebar-section">
-                <p class="sidebar-label">Menu</p>
-                <ul class="sidebar-nav">
-                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}"><i class="bi bi-house"></i> Home</a></li>
-                    <li><a class="sidebar-link {% if request.resolver_match.app_name == 'menu' and request.resolver_match.url_name == 'menu_list' %}active{% endif %}" href="{% url 'menu:menu_list' %}"><i class="bi bi-journal-text"></i> Menu</a></li>
-                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'core:about' %}"><i class="bi bi-info-circle"></i> About & Contact</a></li>
-                </ul>
-            </nav>
-
-            {% if user.is_authenticated and not user.is_admin %}
-            <!-- Customer Navigation -->
-            <nav class="sidebar-section">
-                <p class="sidebar-label">My Account</p>
-                <ul class="sidebar-nav">
-                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'my_orders' %}active{% endif %}" href="{% url 'orders:my_orders' %}"><i class="bi bi-receipt"></i> My Orders</a></li>
-                    <li><a class="sidebar-link {% if request.resolver_match.app_name == 'reservations' %}active{% endif %}" href="{% url 'reservations:reservation_list' %}"><i class="bi bi-calendar2-check"></i> Reservations</a></li>
-                </ul>
-            </nav>
-            {% endif %}
-
-            {% if user.is_authenticated and user.is_admin %}
-            <!-- Admin Navigation -->
-            <hr class="sidebar-divider">
-            <nav class="sidebar-section">
-                <p class="sidebar-label">Administration</p>
-                <ul class="sidebar-nav">
-                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'manage_menu' or request.resolver_match.url_name == 'add_item' or request.resolver_match.url_name == 'edit_item' %}active{% endif %}" href="{% url 'menu:manage_menu' %}"><i class="bi bi-grid"></i> Manage Menu</a></li>
-                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'manage_orders' %}active{% endif %}" href="{% url 'orders:manage_orders' %}"><i class="bi bi-inbox"></i> Manage Orders</a></li>
-                    <li><a class="sidebar-link {% if request.resolver_match.url_name == 'manage_reservations' %}active{% endif %}" href="{% url 'reservations:manage_reservations' %}"><i class="bi bi-calendar2-range"></i> Manage Reservations</a></li>
-                </ul>
-            </nav>
-            {% endif %}
-
-            <!-- Cart (visible for customers / visitors) -->
-            {% if not user.is_authenticated or not user.is_admin %}
-            <hr class="sidebar-divider">
-            <nav class="sidebar-section">
+            <!-- Unified Navigation List -->
+            <nav class="sidebar-nav-container">
                 <ul class="sidebar-nav">
                     <li>
-                        <a class="sidebar-link {% if request.resolver_match.url_name == 'cart_view' %}active{% endif %}" href="{% url 'orders:cart_view' %}">
-                            <i class="bi bi-cart3"></i>
-                            Cart
-                            {% if request.session.cart_count %}
-                                <span class="badge bg-warning text-dark ms-auto">{{ request.session.cart_count }}</span>
-                            {% endif %}
+                        <a class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">
+                            <i class="bi bi-house"></i> Home
                         </a>
                     </li>
+                    <li>
+                        <a class="sidebar-link {% if request.resolver_match.app_name == 'menu' and request.resolver_match.url_name == 'menu_list' %}active{% endif %}" href="{% url 'menu:menu_list' %}">
+                            <i class="bi bi-journal-text"></i> Menu &amp; Order
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebar-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'core:about' %}">
+                            <i class="bi bi-info-circle"></i> About &amp; Contact
+                        </a>
+                    </li>
+
+                    {% if user.is_authenticated and not user.is_admin %}
+                    <li>
+                        <a class="sidebar-link {% if request.resolver_match.url_name == 'my_orders' %}active{% endif %}" href="{% url 'orders:my_orders' %}">
+                            <i class="bi bi-receipt"></i> My Orders
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebar-link {% if request.resolver_match.app_name == 'reservations' %}active{% endif %}" href="{% url 'reservations:reservation_list' %}">
+                            <i class="bi bi-calendar2-check"></i> Reservations
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% if user.is_authenticated and user.is_admin %}
+                    <li>
+                        <a class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard:dashboard' %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebar-link {% if request.resolver_match.url_name == 'manage_menu' or request.resolver_match.url_name == 'add_item' or request.resolver_match.url_name == 'edit_item' %}active{% endif %}" href="{% url 'menu:manage_menu' %}">
+                            <i class="bi bi-grid"></i> Manage Menu
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebar-link {% if request.resolver_match.url_name == 'manage_orders' %}active{% endif %}" href="{% url 'orders:manage_orders' %}">
+                            <i class="bi bi-inbox"></i> Manage Orders
+                        </a>
+                    </li>
+                    <li>
+                        <a class="sidebar-link {% if request.resolver_match.url_name == 'manage_reservations' %}active{% endif %}" href="{% url 'reservations:manage_reservations' %}">
+                            <i class="bi bi-calendar2-range"></i> Manage Reservations
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
             </nav>
-            {% endif %}
 
-            <!-- Sidebar Footer — User -->
+            <!-- Sidebar Footer — User Authentication -->
             <div class="sidebar-footer">
                 {% if user.is_authenticated %}
                     <a class="sidebar-user" href="{% url 'accounts:profile' %}">
-                        <span class="sidebar-user-avatar"><i class="bi bi-person"></i></span>
+                        <span class="sidebar-user-avatar">{{ user.full_name|default:user.email|slice:":1"|upper }}</span>
                         <span class="sidebar-user-info">
                             <span class="sidebar-user-name">{{ user.full_name|default:user.email }}</span>
-                            <span class="sidebar-user-role">{% if user.is_admin %}Admin{% else %}Customer{% endif %}</span>
+                            <span class="sidebar-user-role">{% if user.is_admin %}Administrator{% else %}Customer{% endif %}</span>
                         </span>
                     </a>
-                    <form method="post" action="{% url 'accounts:logout' %}" class="mt-1">
+                    <form method="post" action="{% url 'accounts:logout' %}" class="mt-2">
                         {% csrf_token %}
-                        <button type="submit" class="sidebar-link text-zinc-400 w-100 border-0 bg-transparent" style="cursor:pointer;">
+                        <button type="submit" class="sidebar-link w-100 border-0 bg-transparent text-secondary" style="cursor:pointer; font-size: 0.8rem; padding: 0.4rem 0.65rem;">
                             <i class="bi bi-box-arrow-right"></i> Logout
                         </button>
                     </form>
                 {% else %}
-                    <div class="d-flex flex-column gap-1">
-                        <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-sm w-100">Login</a>
-                        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm w-100">Register</a>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-sm w-100">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm w-100">
+                            <i class="bi bi-person-plus"></i> Register
+                        </a>
                     </div>
                 {% endif %}
             </div>
         </aside>
 
-        <!-- Mobile overlay -->
+        <!-- Mobile overlay for closing sidebar -->
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <!-- ============ MAIN CONTENT ============ -->
+        <!-- ============ MAIN CONTENT AREA ============ -->
         <div class="main-content">
-            <!-- Mobile topbar -->
-            <header class="topbar">
-                <button class="topbar-toggle" id="sidebarToggle" aria-label="Toggle navigation">
-                    <i class="bi bi-list"></i>
-                </button>
-                <a class="topbar-brand" href="{% url 'core:home' %}">Restoran Alkhair</a>
+            <!-- Top Header Bar -->
+            <header class="top-header">
+                <div class="top-header-left">
+                    <button class="mobile-toggle" id="sidebarToggle" aria-label="Toggle navigation">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div class="status-pill d-none d-sm-inline-flex">
+                        <span class="status-dot-pulse"></span>
+                        <span>Open Today: 11:00 AM – 11:30 PM · Parit Raja, Batu Pahat</span>
+                    </div>
+                </div>
 
-                <!-- Cart badge on mobile -->
-                {% if not user.is_authenticated or not user.is_admin %}
-                    <a href="{% url 'orders:cart_view' %}" class="ms-auto position-relative" style="color: var(--text-main); font-size: 1.2rem;">
-                        <i class="bi bi-cart3"></i>
-                        {% if request.session.cart_count %}
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark" style="font-size:0.65rem;">{{ request.session.cart_count }}</span>
-                        {% endif %}
-                    </a>
-                {% endif %}
+                <div class="top-header-right">
+                    <!-- Table Badge if Active -->
+                    {% if request.session.table_number %}
+                        <span class="badge bg-warning text-dark py-2 px-2 d-flex align-items-center gap-1">
+                            <i class="bi bi-geo-alt-fill"></i> Table #{{ request.session.table_number }}
+                            <a href="{% url 'orders:clear_table' %}" class="text-dark text-decoration-none fw-bold ms-1" title="Clear active table">&times;</a>
+                        </span>
+                    {% endif %}
+
+                    <!-- Cart Link -->
+                    {% if not user.is_authenticated or not user.is_admin %}
+                        <a href="{% url 'orders:cart_view' %}" class="btn btn-sm btn-outline-secondary position-relative">
+                            <i class="bi bi-cart3"></i> Cart
+                            {% if request.session.cart_count %}
+                                <span class="badge bg-danger text-white rounded-pill ms-1">{{ request.session.cart_count }}</span>
+                            {% endif %}
+                        </a>
+                    {% endif %}
+
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-primary d-none d-md-inline-flex">
+                            Sign In
+                        </a>
+                    {% endif %}
+                </div>
             </header>
 
-            <!-- Flash Messages -->
+            <!-- Flash Feedback Messages -->
             {% if messages %}
-                <div class="px-3 px-lg-0 pt-3">
-                    <div class="page-content py-0" style="padding-bottom:0 !important;">
+                <div class="px-3 px-lg-4 pt-3">
+                    <div style="max-width: 1240px; margin: 0 auto;">
                         {% for message in messages %}
-                            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show mb-2" role="alert">
                                 {{ message }}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
@@ -151,23 +182,25 @@
                 </div>
             {% endif %}
 
-            <!-- Page Content -->
+            <!-- Page Content Body -->
             <main class="page-content">
                 {% block content %}{% endblock %}
             </main>
 
-            <!-- Footer -->
+            <!-- Application Footer -->
             <footer class="app-footer">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2" style="max-width: 1240px; margin: 0 auto;">
                     <div>
-                        <span class="fw-semibold text-dark">Restoran Alkhair</span>
-                        <span class="mx-1">·</span>
-                        Parit Raja, Batu Pahat, 86400 Johor
+                        <span class="fw-bold text-dark">Restoran Alkhair</span>
+                        <span class="text-muted mx-2">·</span>
+                        <span class="text-secondary">Authentic Middle-Eastern &amp; BBQ Cuisine</span>
+                        <span class="text-muted mx-2 d-none d-md-inline">·</span>
+                        <span class="text-secondary d-none d-md-inline">Parit Raja, 86400 Batu Pahat, Johor</span>
                     </div>
-                    <div class="text-end">
+                    <div class="text-secondary small">
                         <span>Daily: 11:00 AM – 11:30 PM</span>
-                        <span class="mx-1">·</span>
-                        <span>BIK11003 & BIK20404 Project</span>
+                        <span class="text-muted mx-2">·</span>
+                        <span>BIK11003 &amp; BIK20404 Project</span>
                     </div>
                 </div>
             </footer>

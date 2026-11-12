@@ -11,10 +11,10 @@
     </div>
 
     {% if table_number %}
-        <div class="alert alert-warning py-2 px-3 mb-0 d-flex align-items-center gap-2 rounded shadow-sm">
+        <div class="alert alert-warning py-2 px-3 mb-0 d-flex align-items-center gap-2 rounded border">
             <i class="bi bi-geo-alt-fill text-dark fs-5"></i>
             <div>
-                <span class="fw-bold small">Dine-in Order: Table #{{ table_number }}</span>
+                <span class="fw-bold small text-dark">Dine-in Order: Table #{{ table_number }}</span>
                 <a href="{% url 'orders:clear_table' %}" class="btn btn-sm btn-outline-danger ms-2 py-0 px-2" title="Clear table selection">Cancel Table</a>
             </div>
         </div>
@@ -40,7 +40,7 @@
             <h2 id="cat-heading-{{ cat.category_id }}" class="h5 fw-bold mb-0 text-dark">
                 {{ cat.category_name }}
             </h2>
-            <span class="badge bg-light text-muted border">{{ cat.items.count }}</span>
+            <span class="badge bg-light text-muted border">{{ cat.items.count }} items</span>
         </div>
 
         <div class="row g-4">
@@ -48,17 +48,15 @@
                 {% if item.is_available or user.is_admin %}
                     <div class="col-md-6 col-lg-4">
                         <div class="card dish-card {% if not item.is_available %}opacity-75 bg-light{% endif %}">
+                            <!-- Dish Image / Clean Placeholder (No SVG) -->
                             <div class="dish-img-container">
                                 {% if item.image %}
                                     <img src="{{ item.image.url }}" alt="{{ item.item_name }}">
-                                {% elif "kebab" in item.item_name|lower or "barbecue" in item.item_name|lower %}
-                                    <img src="{% static 'img/kebab_platter.svg' %}" alt="{{ item.item_name }}">
-                                {% elif "shawarma" in item.item_name|lower or "sandwich" in item.item_name|lower or "zinger" in item.item_name|lower or "falafel" in item.item_name|lower %}
-                                    <img src="{% static 'img/shawarma_wrap.svg' %}" alt="{{ item.item_name }}">
-                                {% elif "lamb" in item.item_name|lower %}
-                                    <img src="{% static 'img/lamb_shank.svg' %}" alt="{{ item.item_name }}">
                                 {% else %}
-                                    <img src="{% static 'img/kebab_platter.svg' %}" alt="{{ item.item_name }}">
+                                    <div class="dish-placeholder">
+                                        <i class="bi bi-image"></i>
+                                        <span class="dish-placeholder-label">{{ item.item_name }}</span>
+                                    </div>
                                 {% endif %}
                             </div>
 
@@ -69,7 +67,7 @@
                                 </div>
 
                                 <p class="text-muted small flex-grow-1 mb-3">
-                                    {{ item.description|default:"Prepared fresh with authentic Middle-Eastern spices." }}
+                                    {{ item.description|default:"Prepared fresh daily with authentic regional spices." }}
                                 </p>
 
                                 {% if not item.is_available %}
@@ -81,9 +79,9 @@
                                         <input type="hidden" name="item_id" value="{{ item.item_id }}">
                                         
                                         <div class="input-group input-group-sm cart-quantity-control" style="width: 95px;">
-                                            <button type="button" class="btn btn-outline-secondary btn-qty-minus px-2">-</button>
+                                            <button type="button" class="btn btn-outline-secondary btn-qty-minus px-2" aria-label="Decrease quantity">-</button>
                                             <input type="number" name="quantity" value="1" min="1" max="99" class="form-control text-center px-1" aria-label="Quantity for {{ item.item_name }}">
-                                            <button type="button" class="btn btn-outline-secondary btn-qty-plus px-2">+</button>
+                                            <button type="button" class="btn btn-outline-secondary btn-qty-plus px-2" aria-label="Increase quantity">+</button>
                                         </div>
 
                                         <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
