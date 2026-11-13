@@ -118,12 +118,12 @@ After running `seed_demo` or `seed_demo_data`, use these credentials to explore:
 
 ## 4. Running Automated Tests
 
-Run the complete 50-test automated test suite across all 6 applications:
+Run the complete 51-test automated test suite across all 6 applications:
 ```bash
 python main/manage.py test core accounts menu orders reservations dashboard
 ```
 
-All 50 tests execute against an isolated test database and verify:
+All 51 tests execute against an isolated test database and verify:
 - Registration, password hashing, and generic login error handling
 - Role-based access control (`admin_required` blocking customers with 403)
 - Ownership security (customers receiving 404 on other customers' orders and bookings)

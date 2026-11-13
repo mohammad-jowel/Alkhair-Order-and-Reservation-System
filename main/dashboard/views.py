@@ -12,30 +12,49 @@ from orders.models import Order, OrderItem
 from reservations.models import Reservation
 
 
-def _parse_date_range(request):
-    """Helper to parse and sanitize start_date and end_date query parameters."""
+def _parse_date_range(request, today):
+    """
+    Helper to parse and sanitize start_date, end_date, or preset query parameters.
+    Supports quick presets: ?preset=this_week, ?preset=this_month, ?preset=today.
+    """
+    preset = request.GET.get('preset', '').strip().lower()
     start_date_str = request.GET.get('start_date', '').strip()
     end_date_str = request.GET.get('end_date', '').strip()
 
     start_date = None
     end_date = None
 
-    if start_date_str:
-        try:
-            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-        except ValueError:
-            start_date = None
+    if preset == 'this_week':
+        # Start of current week (Monday) to today
+        start_date = today - timedelta(days=today.weekday())
+        end_date = today
+    elif preset == 'this_month':
+        # Start of current month (1st) to today
+        start_date = today.replace(day=1)
+        end_date = today
+    elif preset == 'today':
+        start_date = today
+        end_date = today
+    else:
+        if start_date_str:
+            try:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                start_date = None
 
-    if end_date_str:
-        try:
-            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
-        except ValueError:
-            end_date = None
+        if end_date_str:
+            try:
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                end_date = None
 
-    if start_date and end_date and start_date > end_date:
-        start_date, end_date = end_date, start_date
+        if start_date and end_date and start_date > end_date:
+            start_date, end_date = end_date, start_date
 
-    return start_date, end_date, start_date_str, end_date_str
+    # Determine if active period filter is applied (today-only is the default scope)
+    is_filtered = bool(start_date or end_date) and not (preset == 'today' or (start_date == today and end_date == today))
+
+    return start_date, end_date, preset, is_filtered
 
 
 @admin_required
@@ -44,13 +63,12 @@ def dashboard(request):
     Admin dashboard calculating metrics via Django ORM aggregation.
     Displays summary cards, sales Chart.js chart, best-selling items,
     orders by type, recent orders, and pending reservations.
-    By default, metrics represent TODAY.
-    Supports optional date filtering via ?start_date=YYYY-MM-DD and ?end_date=YYYY-MM-DD
-    to inspect custom periods and generate downloadable CSV reports.
+    By default, metrics represent strictly TODAY.
+    Supports quick presets (?preset=this_week, ?preset=this_month) and custom date ranges
+    to inspect period performance and generate downloadable CSV reports.
     """
     today = timezone.localdate()
-    start_date, end_date, _, _ = _parse_date_range(request)
-    is_filtered = bool(start_date or end_date)
+    start_date, end_date, preset, is_filtered = _parse_date_range(request, today)
 
     # 1. Base Summary Metrics
     # Sales Total Rule: sum of total_amount for orders with payment_status = 'paid' and order_status != 'cancelled'
@@ -60,7 +78,6 @@ def dashboard(request):
     ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
 
     today_orders_count = Order.objects.filter(order_date__date=today).count()
-    total_orders_count = Order.objects.count()
     pending_orders_count = Order.objects.filter(order_status='pending').count()
     total_customers_count = Account.objects.filter(role='customer').count()
     pending_reservations_count = Reservation.objects.filter(status='pending').count()
@@ -77,7 +94,7 @@ def dashboard(request):
     ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
     period_orders_count = filtered_orders.count()
 
-    # Determine Active Dashboard Scope (Default: Today; Filtered: Selected Range)
+    # Determine Active Dashboard Scope (Default: Today; Filtered: Selected Range/Preset)
     if is_filtered:
         dashboard_orders = filtered_orders
         dashboard_sales = period_sales
@@ -165,7 +182,6 @@ def dashboard(request):
     context = {
         'today_sales': today_sales,
         'today_orders_count': today_orders_count,
-        'total_orders_count': total_orders_count,
         'pending_orders_count': pending_orders_count,
         'total_customers_count': total_customers_count,
         'pending_reservations_count': pending_reservations_count,
@@ -177,6 +193,7 @@ def dashboard(request):
         'orders_table_title': orders_table_title,
         'period_sales': period_sales,
         'period_orders_count': period_orders_count,
+        'preset': preset,
         'start_date': start_date.strftime('%Y-%m-%d') if start_date else '',
         'end_date': end_date.strftime('%Y-%m-%d') if end_date else '',
         'is_filtered': is_filtered,
@@ -195,10 +212,10 @@ def dashboard(request):
 def download_report(request):
     """
     Exports a sales & order report as a formatted CSV file.
-    Supports ?start_date=YYYY-MM-DD and ?end_date=YYYY-MM-DD filtering.
+    Supports ?start_date=YYYY-MM-DD & ?end_date=YYYY-MM-DD or ?preset=this_week / this_month.
     """
     today = timezone.localdate()
-    start_date, end_date, _, _ = _parse_date_range(request)
+    start_date, end_date, preset, _ = _parse_date_range(request, today)
 
     orders = Order.objects.select_related('account', 'table').prefetch_related('items__item').order_by('-order_date')
 
@@ -207,8 +224,11 @@ def download_report(request):
     if end_date:
         orders = orders.filter(order_date__date__lte=end_date)
 
-    filename_part = ""
-    if start_date and end_date:
+    if preset == 'this_week':
+        filename_part = f"_this_week_{start_date}_to_{end_date}"
+    elif preset == 'this_month':
+        filename_part = f"_this_month_{start_date}_to_{end_date}"
+    elif start_date and end_date:
         filename_part = f"_{start_date}_to_{end_date}"
     elif start_date:
         filename_part = f"_from_{start_date}"

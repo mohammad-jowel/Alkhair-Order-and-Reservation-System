@@ -99,7 +99,6 @@ class DashboardTestCase(TestCase):
         # Check calculated metrics in context
         self.assertEqual(response.context['today_sales'], Decimal('44.00'))
         self.assertEqual(response.context['today_orders_count'], 3)
-        self.assertEqual(response.context['total_orders_count'], 3)
         self.assertEqual(response.context['pending_orders_count'], 1)
         self.assertEqual(response.context['pending_reservations_count'], 1)
 
@@ -131,11 +130,27 @@ class DashboardTestCase(TestCase):
         today_str = today.strftime('%Y-%m-%d')
         response = self.client.get(reverse('dashboard:dashboard'), {'start_date': today_str, 'end_date': today_str})
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.context['is_filtered'])
-        self.assertEqual(response.context['period_sales'], Decimal('50.00'))
-        self.assertEqual(response.context['period_orders_count'], 1)
-        self.assertContains(response, 'Period Sales')
-        self.assertContains(response, 'Reset')
+        self.assertEqual(response.context['dashboard_sales'], Decimal('50.00'))
+        self.assertEqual(response.context['dashboard_orders_count'], 1)
+        self.assertContains(response, 'Paid orders today')
+
+    def test_admin_dashboard_preset_filters(self):
+        """Dashboard supports quick presets for this_week and this_month."""
+        self.client.login(email='admin_dash@alkhair.com', password='AdminPassword123!')
+        
+        # Test This Week
+        resp_week = self.client.get(reverse('dashboard:dashboard'), {'preset': 'this_week'})
+        self.assertEqual(resp_week.status_code, 200)
+        self.assertEqual(resp_week.context['preset'], 'this_week')
+        self.assertTrue(resp_week.context['is_filtered'])
+        self.assertContains(resp_week, 'This Week')
+
+        # Test This Month
+        resp_month = self.client.get(reverse('dashboard:dashboard'), {'preset': 'this_month'})
+        self.assertEqual(resp_month.status_code, 200)
+        self.assertEqual(resp_month.context['preset'], 'this_month')
+        self.assertTrue(resp_month.context['is_filtered'])
+        self.assertContains(resp_month, 'This Month')
 
     def test_download_report_csv_authenticated_admin(self):
         """Admin can download a formatted CSV report filtered by date range."""

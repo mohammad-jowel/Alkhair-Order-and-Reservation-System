@@ -35,11 +35,28 @@
 <div class="card shadow-sm border-0 mb-4 bg-white">
     <div class="card-body py-3 px-3">
         <form method="get" action="{% url 'dashboard:dashboard' %}" class="row g-2 align-items-end">
-            <div class="col-12 col-md-auto">
-                <span class="fw-bold text-dark small d-flex align-items-center mb-1">
-                    <i class="bi bi-calendar-range text-primary me-2"></i>Date Range Filter:
+            <!-- Quick Filter Presets -->
+            <div class="col-12 col-md-auto mb-2 mb-md-0">
+                <span class="fw-bold text-dark small d-block mb-1">
+                    <i class="bi bi-funnel text-primary me-1"></i>Quick Filters:
                 </span>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Quick date filters">
+                    <a href="{% url 'dashboard:dashboard' %}" 
+                       class="btn {% if not is_filtered %}btn-primary text-white{% else %}btn-outline-secondary{% endif %}">
+                        Today
+                    </a>
+                    <a href="{% url 'dashboard:dashboard' %}?preset=this_week" 
+                       class="btn {% if preset == 'this_week' %}btn-primary text-white{% else %}btn-outline-secondary{% endif %}">
+                        This Week
+                    </a>
+                    <a href="{% url 'dashboard:dashboard' %}?preset=this_month" 
+                       class="btn {% if preset == 'this_month' %}btn-primary text-white{% else %}btn-outline-secondary{% endif %}">
+                        This Month
+                    </a>
+                </div>
             </div>
+
+            <!-- Custom Date Range -->
             <div class="col-6 col-md-2">
                 <label for="start_date" class="form-label small text-muted mb-1">From</label>
                 <input type="date" name="start_date" id="start_date" class="form-control form-control-sm" value="{{ start_date }}">
@@ -49,19 +66,19 @@
                 <input type="date" name="end_date" id="end_date" class="form-control form-control-sm" value="{{ end_date }}">
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <i class="bi bi-funnel me-1"></i> Filter
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-calendar-range me-1"></i> Filter
                 </button>
             </div>
             {% if is_filtered %}
             <div class="col-auto">
-                <a href="{% url 'dashboard:dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                <a href="{% url 'dashboard:dashboard' %}" class="btn btn-outline-secondary btn-sm" title="Reset to today">
                     <i class="bi bi-x-circle me-1"></i> Reset
                 </a>
             </div>
             {% endif %}
             <div class="col-12 col-md-auto ms-md-auto mt-2 mt-md-0">
-                <a href="{% url 'dashboard:download_report' %}{% if is_filtered %}?start_date={{ start_date }}&end_date={{ end_date }}{% endif %}" class="btn btn-outline-success btn-sm w-100">
+                <a href="{% url 'dashboard:download_report' %}{% if preset %}?preset={{ preset }}{% elif is_filtered %}?start_date={{ start_date }}&end_date={{ end_date }}{% endif %}" class="btn btn-outline-success btn-sm w-100">
                     <i class="bi bi-file-earmark-arrow-down me-1"></i> Download Report (CSV)
                 </a>
             </div>
@@ -109,7 +126,7 @@
                 {% if is_filtered %}
                     Orders in selected range
                 {% else %}
-                    Placed today (All-time: {{ total_orders_count }})
+                    Placed today
                 {% endif %}
             </div>
         </div>

@@ -75,8 +75,9 @@ This document tracks all design refinements, architectural additions, and user i
 - **Views**: `dashboard.views.dashboard` and `dashboard.views.download_report`
 - **Template**: `templates/dashboard/dashboard.html`
 - **Capabilities**:
-  - **Custom Period Filtering**: Admin selects "From" and "To" dates; metrics, 30-day dynamic chart trend, channel breakdowns, best sellers, and recent orders update dynamically.
-  - **Quick Reset**: One-click reset button restores default current-day/7-day view.
+  - **Quick Presets & Custom Range Filtering**: One-click preset filters for "Today", "This Week", and "This Month", alongside custom "From" and "To" date pickers; metrics, chart trend, channel breakdowns, best sellers, and orders update dynamically.
+  - **Performance Optimization**: Removed redundant all-time table scans (`Order.objects.count()`); the dashboard focuses strictly on active/today queries.
+  - **Quick Reset**: One-click reset button restores default current-day view.
   - **CSV Report Download**: Generates a downloadable CSV (`alkhair_sales_report_<dates>.csv`) with UTF-8 BOM encoding for seamless opening in Microsoft Excel. Includes executive summary metrics (Period, Total Orders, Paid Revenue) and an itemized breakdown of all orders with items, pricing, customer details, and payment/fulfillment status.
 
 ---
@@ -88,4 +89,4 @@ All underlying relational database constraints, business rules, and academic cri
 2. **Join Table Integrity**: `order_item` resolves the M:N relationship with `UniqueConstraint(fields=['order', 'item'])` and price snapshots (`unit_price`).
 3. **Atomic Pricing**: Total order calculations occur strictly on the server inside `transaction.atomic()`.
 4. **Demonstration Payments**: Simulated gateway banner and test actions with strict separation between `order_status` and `payment_status`.
-5. **Automated Test Suite**: Extended from 39 tests to **50 automated tests**, maintaining 100% pass rate.
+5. **Automated Test Suite**: Extended from 39 tests to **51 automated tests**, maintaining 100% pass rate.
