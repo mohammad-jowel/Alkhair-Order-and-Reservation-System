@@ -184,10 +184,10 @@ class Command(BaseCommand):
             (c5, 1, 'dine_in',   'completed', 'sim_ewallet', 'paid',         2,    [(9, 1), (1, 2)]),
             (c1, 1, 'takeaway',  'completed', 'cash',        'paid',         None, [(4, 1)]),
             # Today
-            (c2, 0, 'delivery',  'pending',   'cash',        'pending',      None, [(0, 1), (15, 2)]),
-            (c3, 0, 'takeaway',  'pending',   'sim_banking', 'pending',      None, [(4, 1), (6, 1)]),
+            (c2, 0, 'delivery',  'completed', 'sim_banking', 'paid',         None, [(0, 1), (15, 2)]),
+            (c3, 0, 'takeaway',  'ready',     'sim_ewallet', 'paid',         None, [(4, 1), (6, 1)]),
             (c4, 0, 'dine_in',   'preparing', 'cash',        'pending',      3,    [(2, 2), (8, 1), (12, 1)]),
-            (c5, 0, 'delivery',  'pending',   'sim_ewallet', 'pending',      None, [(1, 1), (3, 1)]),
+            (c5, 0, 'delivery',  'pending',   'sim_banking', 'pending',      None, [(1, 1), (3, 1)]),
         ]
 
         hours = [11, 12, 13, 14, 17, 18, 19, 20, 21, 12, 15, 19, 11, 13, 18]
