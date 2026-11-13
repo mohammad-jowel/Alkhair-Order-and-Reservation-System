@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import ProtectedError
+from django.db.models import ProtectedError, Prefetch, Q
 from accounts.decorators import admin_required
 from .models import MenuCategory, MenuItem
 from .forms import CategoryForm, MenuItemForm
@@ -12,7 +12,20 @@ def menu_list(request):
     Groups items by category and allows adding items to cart.
     Works seamlessly with or without an active table context in session.
     """
-    categories = MenuCategory.objects.prefetch_related('items').all()
+    search_query = request.GET.get('q', '').strip()
+    items = MenuItem.objects.all()
+    if not request.user.is_authenticated or not request.user.is_admin:
+        items = items.filter(is_available=True)
+    if search_query:
+        items = items.filter(
+            Q(item_name__icontains=search_query)
+            | Q(description__icontains=search_query)
+            | Q(category__category_name__icontains=search_query)
+        )
+
+    categories = MenuCategory.objects.prefetch_related(
+        Prefetch('items', queryset=items.order_by('item_name'))
+    ).all()
     selected_category_id = request.GET.get('category')
 
     if selected_category_id:
@@ -24,10 +37,14 @@ def menu_list(request):
     else:
         filtered_categories = categories
 
+    if search_query:
+        filtered_categories = filtered_categories.filter(items__in=items).distinct()
+
     context = {
         'all_categories': categories,
         'categories': filtered_categories,
         'selected_category_id': selected_category_id,
+        'search_query': search_query,
         'table_number': request.session.get('table_number'),
     }
     return render(request, 'menu/menu_list.html', context)

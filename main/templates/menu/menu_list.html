@@ -22,13 +22,25 @@
     {% endif %}
 </div>
 
+<!-- Menu Search -->
+<form method="get" action="{% url 'menu:menu_list' %}" class="card border-0 shadow-sm p-3 mb-3" role="search">
+    {% if selected_category_id %}<input type="hidden" name="category" value="{{ selected_category_id }}">{% endif %}
+    <label for="menuSearch" class="form-label fw-semibold mb-2">Find a dish</label>
+    <div class="input-group">
+        <span class="input-group-text bg-white"><i class="bi bi-search text-muted" aria-hidden="true"></i></span>
+        <input id="menuSearch" type="search" name="q" value="{{ search_query }}" class="form-control" placeholder="Search dishes, descriptions, or categories" aria-label="Search menu">
+        <button class="btn btn-primary" type="submit">Search</button>
+        {% if search_query %}<a class="btn btn-outline-secondary" href="{% if selected_category_id %}{% url 'menu:menu_list' %}?category={{ selected_category_id }}{% else %}{% url 'menu:menu_list' %}{% endif %}">Clear</a>{% endif %}
+    </div>
+</form>
+
 <!-- Category Filter Pills -->
 <div class="category-filter-bar mb-4">
-    <a href="{% url 'menu:menu_list' %}" class="category-pill {% if not selected_category_id %}active{% endif %}">
+    <a href="{% url 'menu:menu_list' %}{% if search_query %}?q={{ search_query|urlencode }}{% endif %}" class="category-pill {% if not selected_category_id %}active{% endif %}">
         All
     </a>
     {% for cat in all_categories %}
-        <a href="{% url 'menu:menu_list' %}?category={{ cat.category_id }}" class="category-pill {% if selected_category_id == cat.category_id %}active{% endif %}">
+        <a href="{% url 'menu:menu_list' %}?category={{ cat.category_id }}{% if search_query %}&amp;q={{ search_query|urlencode }}{% endif %}" class="category-pill {% if selected_category_id == cat.category_id %}active{% endif %}">
             {{ cat.category_name }}
         </a>
     {% endfor %}
@@ -102,7 +114,7 @@
     </section>
 {% empty %}
     <div class="text-center py-5 text-muted">
-        <p>No menu items available at the moment.</p>
+        {% if search_query %}<p>No dishes match “{{ search_query }}”. Try another search.</p>{% else %}<p>No menu items available at the moment.</p>{% endif %}
     </div>
 {% endfor %}
 {% endblock %}
