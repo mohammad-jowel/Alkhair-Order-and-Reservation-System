@@ -95,3 +95,11 @@ This document records technical decisions, assumptions, and design rationale for
 - Logged-in administrators have public customer links (*Home*, *Menu & Order*, *About & Contact*) hidden from their sidebar navigation.
 - The admin workspace starts immediately at **Dashboard**, followed by management sections: **Manage Menu**, **Manage Orders**, **Manage Reservations**, and **Table QR Codes**.
 
+---
+
+## 13. Monthly Sales Metric on Dashboard
+
+- The admin dashboard's primary revenue card displays "Today's Sales" paired with "This month's sales" (`order_date__year` and `order_date__month`) instead of an "All-time" total.
+- This provides managers with meaningful, actionable monthly revenue tracking rather than lifetime figures that may be skewed or less useful for period-based reviews.
+
+

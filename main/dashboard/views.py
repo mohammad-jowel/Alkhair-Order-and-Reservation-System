@@ -26,6 +26,12 @@ def dashboard(request):
         payment_status='paid'
     ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
 
+    this_month_sales = Order.objects.filter(
+        order_date__year=today.year,
+        order_date__month=today.month,
+        payment_status='paid'
+    ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
+
     total_sales_all_time = Order.objects.filter(
         payment_status='paid'
     ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
@@ -93,6 +99,7 @@ def dashboard(request):
 
     context = {
         'today_sales': today_sales,
+        'this_month_sales': this_month_sales,
         'total_sales_all_time': total_sales_all_time,
         'total_orders_count': total_orders_count,
         'pending_orders_count': pending_orders_count,

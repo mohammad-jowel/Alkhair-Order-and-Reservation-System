@@ -125,7 +125,7 @@ prototype/
 ### App 6: `dashboard`
 - **Purpose**: Executive admin dashboard with ORM aggregations.
 - `views.py`:
-  - `dashboard`: Calculates today's sales, all-time sales, order counts, customer counts, 7-day sales trend (for Chart.js), orders by type, top 5 best-selling dishes, and recent 10 orders.
+  - `dashboard`: Calculates today's sales, this month's sales, order counts, customer counts, 7-day sales trend (for Chart.js), orders by type, top 5 best-selling dishes, and recent 10 orders.
   - Contains multi-table join queries with comments explaining database integration.
 
 ---
