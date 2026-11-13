@@ -88,7 +88,7 @@
                                     {% endif %}
 
                                     {% if res.status != 'rejected' and res.status != 'cancelled' %}
-                                        <button type="submit" name="action" value="reject" class="btn btn-sm btn-outline-danger py-1 px-2" title="Reject Reservation">
+                                        <button type="submit" name="action" value="reject" class="btn btn-sm btn-outline-danger py-1 px-2" data-confirm="Are you sure you want to reject reservation #{{ res.reservation_id }} for {{ res.customer_name }}?" data-confirm-title="Reject Reservation" data-confirm-btn="Reject" title="Reject Reservation">
                                             <i class="bi bi-x-lg"></i> Reject
                                         </button>
                                     {% endif %}

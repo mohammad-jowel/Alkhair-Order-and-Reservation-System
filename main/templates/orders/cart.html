@@ -18,7 +18,7 @@
                     <form method="post" action="{% url 'orders:cart_view' %}" class="d-inline">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="clear">
-                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" data-confirm="Are you sure you want to clear your cart?">
+                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" data-confirm="Are you sure you want to clear all items from your cart?" data-confirm-title="Clear Cart" data-confirm-btn="Clear All">
                             <i class="bi bi-trash"></i> Clear All
                         </button>
                     </form>

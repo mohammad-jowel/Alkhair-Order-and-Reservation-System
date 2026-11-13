@@ -50,7 +50,7 @@
                                 </a>
                                 <form method="post" action="{% url 'menu:delete_category' cat.category_id %}" class="d-inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" data-confirm="Are you sure you want to delete category '{{ cat.category_name }}'?" title="Delete Category">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" data-confirm="Are you sure you want to delete category '{{ cat.category_name }}'?" data-confirm-title="Delete Category" data-confirm-btn="Delete Category" title="Delete Category">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -131,7 +131,7 @@
                                 </a>
                                 <form method="post" action="{% url 'menu:delete_item' item.item_id %}" class="d-inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" data-confirm="Are you sure you want to delete '{{ item.item_name }}'?" title="Delete Item">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" data-confirm="Are you sure you want to delete '{{ item.item_name }}'?" data-confirm-title="Delete Menu Item" data-confirm-btn="Delete Item" title="Delete Item">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>

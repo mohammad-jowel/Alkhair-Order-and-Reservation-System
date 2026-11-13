@@ -108,7 +108,7 @@
                                         {% if res.status == 'pending' or res.status == 'confirmed' %}
                                             <form method="post" action="{% url 'reservations:cancel_reservation' res.reservation_id %}" class="d-inline">
                                                 {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" data-confirm="Are you sure you want to cancel this reservation?">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" data-confirm="Are you sure you want to cancel this table reservation? This cannot be undone." data-confirm-title="Cancel Reservation" data-confirm-btn="Cancel Reservation">
                                                     Cancel
                                                 </button>
                                             </form>
