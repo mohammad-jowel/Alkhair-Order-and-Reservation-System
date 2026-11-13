@@ -5,55 +5,24 @@
 
 {% block content %}
 <div class="row g-5 mb-5 pt-2">
-    <!-- Left Column: Culinary Story & Highlights -->
     <div class="col-lg-6">
         <span class="hero-badge mb-3"><i class="bi bi-geo-alt"></i> Parit Raja, Batu Pahat</span>
-        <h1 class="display-5 fw-bold mb-3 text-dark">About Restoran Alkhair</h1>
-        <p class="lead text-secondary fs-6 mb-3">
+        <h1 class="display-5 fw-bold mb-3">About Restoran Alkhair</h1>
+        <p class="lead text-secondary fs-6">
             Restoran Alkhair brings genuine Middle-Eastern and Arabian culinary hospitality to Parit Raja, Johor.
         </p>
-        <p class="text-secondary mb-4">
+        <p class="text-secondary">
             From our fresh charcoal-grilled kebabs and traditional Moffa fish to signature garlic shawarma wraps and slow-cooked lamb shanks, every dish is prepared with fresh ingredients and authentic regional spices.
         </p>
 
-        <!-- Culinary Heritage Overview Card -->
-        <div class="card p-4 mb-4 border">
-            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-award text-primary me-2"></i>Our Culinary Pillars</h5>
-            <div class="d-flex flex-column gap-3">
-                <div class="d-flex align-items-start gap-3">
-                    <div class="p-2 rounded bg-light text-primary">
-                        <i class="bi bi-fire fs-5"></i>
-                    </div>
-                    <div>
-                        <div class="fw-bold text-dark small">Genuine Charcoal Hearth</div>
-                        <div class="text-secondary small">Authentic regional smokiness from real wood and pit embers.</div>
-                    </div>
-                </div>
-
-                <div class="d-flex align-items-start gap-3">
-                    <div class="p-2 rounded bg-light text-primary">
-                        <i class="bi bi-patch-check fs-5"></i>
-                    </div>
-                    <div>
-                        <div class="fw-bold text-dark small">100% Halal Fresh Meats</div>
-                        <div class="text-secondary small">Locally sourced chicken and lamb marinated daily in Yemeni spices.</div>
-                    </div>
-                </div>
-
-                <div class="d-flex align-items-start gap-3">
-                    <div class="p-2 rounded bg-light text-primary">
-                        <i class="bi bi-people fs-5"></i>
-                    </div>
-                    <div>
-                        <div class="fw-bold text-dark small">Family &amp; Student Hospitality</div>
-                        <div class="text-secondary small">Comfortable dining room suited for gatherings, families, and students.</div>
-                    </div>
-                </div>
-            </div>
+        <!-- Clean Photo Placeholder Box (No SVG) -->
+        <div class="photo-placeholder-box my-4">
+            <i class="bi bi-image fs-1 mb-2"></i>
+            <span class="fw-semibold text-dark small mb-1">Restaurant Kitchen &amp; Charcoal Grill Photograph</span>
+            <span class="text-muted" style="font-size: 0.75rem;">(Photo placeholder — to be updated later)</span>
         </div>
     </div>
 
-    <!-- Right Column: Location, Operating Hours & Inquiries -->
     <div class="col-lg-6">
         <div class="card p-4 h-100 border">
             <div class="d-flex align-items-center gap-2 mb-4 pb-2 border-bottom">
@@ -61,15 +30,15 @@
                     <i class="bi bi-geo-alt-fill fs-4"></i>
                 </div>
                 <div>
-                    <h2 class="h4 fw-bold mb-0 text-dark">Location &amp; Inquiries</h2>
-                    <p class="text-secondary small mb-0">Visit our dining room or contact us directly</p>
+                    <h2 class="h4 fw-bold mb-0">Location &amp; Inquiries</h2>
+                    <p class="text-muted small mb-0">Visit our dining room or contact us directly</p>
                 </div>
             </div>
 
             <div class="mb-4 d-flex gap-3">
                 <i class="bi bi-pin-map text-primary fs-4 mt-1"></i>
                 <div>
-                    <h6 class="fw-bold mb-1 text-dark">Restaurant Address</h6>
+                    <h6 class="fw-bold mb-1">Restaurant Address</h6>
                     <p class="text-secondary mb-1">
                         Restoran Alkhair<br>
                         Parit Raja, 86400 Batu Pahat, Johor, Malaysia
@@ -81,7 +50,7 @@
             <div class="mb-4 d-flex gap-3">
                 <i class="bi bi-clock-history text-primary fs-4 mt-1"></i>
                 <div>
-                    <h6 class="fw-bold mb-1 text-dark">Operating Hours</h6>
+                    <h6 class="fw-bold mb-1">Operating Hours</h6>
                     <p class="text-secondary mb-1">
                         Monday to Sunday: <strong>{{ opening_time }} – {{ closing_time }}</strong>
                     </p>
@@ -92,7 +61,7 @@
             <div class="mb-4 d-flex gap-3">
                 <i class="bi bi-telephone text-primary fs-4 mt-1"></i>
                 <div>
-                    <h6 class="fw-bold mb-1 text-dark">Phone Contact</h6>
+                    <h6 class="fw-bold mb-1">Phone Contact</h6>
                     <p class="text-secondary mb-1">+60 12-345 6789 / +60 7-123 4567</p>
                     <span class="badge bg-light text-muted border small">[Group Placeholder: Update phone number]</span>
                 </div>
@@ -101,7 +70,7 @@
             <div class="mb-4 d-flex gap-3">
                 <i class="bi bi-envelope text-primary fs-4 mt-1"></i>
                 <div>
-                    <h6 class="fw-bold mb-1 text-dark">Email Contact</h6>
+                    <h6 class="fw-bold mb-1">Email Contact</h6>
                     <p class="text-secondary mb-1">contact@alkhair-restaurant.com</p>
                     <span class="badge bg-light text-muted border small">[Group Placeholder: Update email]</span>
                 </div>
@@ -111,8 +80,8 @@
 
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <div>
-                    <h6 class="fw-bold mb-0 text-dark">Reserve in Advance</h6>
-                    <small class="text-secondary">Table bookings for families and gatherings</small>
+                    <h6 class="fw-bold mb-0">Reserve in Advance</h6>
+                    <small class="text-muted">Table bookings for families and gatherings</small>
                 </div>
                 <a href="{% url 'reservations:reservation_list' %}" class="btn btn-primary">
                     <i class="bi bi-calendar2-plus me-1"></i> Book Table
