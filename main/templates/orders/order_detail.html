@@ -3,15 +3,23 @@
 {% block title %}Order #{{ order.order_id }} - Restoran Alkhair{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-    <div>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div class="page-header mb-0">
         <div class="d-flex align-items-center gap-2 mb-1">
-            <h1 class="h3 fw-bold mb-0">Order #{{ order.order_id }}</h1>
-            <span class="badge {% if order.order_status == 'completed' %}bg-success{% elif order.order_status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %} px-2 py-1 fs-6">
-                {{ order.get_order_status_display }}
-            </span>
+            <h1 class="mb-0">Order #{{ order.order_id }}</h1>
+            {% if order.order_status == 'pending' %}
+                <span class="badge badge-status-pending">Pending</span>
+            {% elif order.order_status == 'preparing' %}
+                <span class="badge badge-status-preparing">Preparing</span>
+            {% elif order.order_status == 'ready' %}
+                <span class="badge badge-status-ready">Ready</span>
+            {% elif order.order_status == 'completed' %}
+                <span class="badge badge-status-completed">Completed</span>
+            {% elif order.order_status == 'cancelled' %}
+                <span class="badge badge-status-cancelled">Cancelled</span>
+            {% endif %}
         </div>
-        <p class="text-muted small mb-0">Placed on {{ order.order_date|date:"l, d F Y at H:i" }}</p>
+        <p class="text-muted small mb-0">Placed on {{ order.order_date|date:"l, d F Y · H:i" }}</p>
     </div>
 
     <div class="d-flex gap-2">
@@ -39,37 +47,38 @@
     <!-- Left Column: Items Breakdown -->
     <div class="col-lg-8">
         <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-white py-3 border-bottom">
-                <h5 class="fw-bold mb-0"><i class="bi bi-receipt-cutoff text-primary me-2"></i>Ordered Dishes</h5>
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center gap-2">
+                <i class="bi bi-receipt text-primary fs-5"></i>
+                <h5 class="fw-bold mb-0">Ordered Dishes</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive-wrapper">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Item</th>
+                                <th class="ps-3">Item</th>
                                 <th class="text-center" style="width: 100px;">Qty</th>
                                 <th style="width: 130px;">Unit Price</th>
-                                <th class="text-end" style="width: 140px;">Subtotal</th>
+                                <th class="text-end pe-3" style="width: 140px;">Subtotal</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for item in order_items %}
                                 <tr>
-                                    <td>
-                                        <div class="fw-bold">{{ item.item.item_name }}</div>
+                                    <td class="ps-3">
+                                        <div class="fw-semibold text-dark">{{ item.item.item_name }}</div>
                                         <div class="text-muted small">{{ item.item.category.category_name }}</div>
                                     </td>
-                                    <td class="text-center fw-semibold">{{ item.quantity }}</td>
-                                    <td>RM {{ item.unit_price|floatformat:2 }}</td>
-                                    <td class="text-end fw-bold text-dark">RM {{ item.subtotal|floatformat:2 }}</td>
+                                    <td class="text-center">{{ item.quantity }}</td>
+                                    <td class="text-secondary">RM {{ item.unit_price|floatformat:2 }}</td>
+                                    <td class="text-end pe-3 fw-semibold text-dark">RM {{ item.subtotal|floatformat:2 }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                         <tfoot class="table-light">
                             <tr>
-                                <th colspan="3" class="text-end fs-5">Total Amount:</th>
-                                <th class="text-end text-primary fs-5 fw-bold">RM {{ order.total_amount|floatformat:2 }}</th>
+                                <th colspan="3" class="text-end py-3 ps-3 fw-bold" style="font-size: 0.95rem; color: var(--dark);">Total Amount:</th>
+                                <th class="text-end pe-3 py-3 text-primary fw-bold" style="font-size: 1.15rem;">RM {{ order.total_amount|floatformat:2 }}</th>
                             </tr>
                         </tfoot>
                     </table>

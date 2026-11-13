@@ -53,7 +53,7 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 14px;
     line-height: 1.6;
     color: var(--text-main);
@@ -65,11 +65,11 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 700;
     color: var(--dark);
-    letter-spacing: -0.025em;
-    line-height: 1.25;
+    letter-spacing: -0.015em;
+    line-height: 1.3;
 }
 
 p {
@@ -83,6 +83,19 @@ a {
 }
 a:hover {
     color: var(--primary-hover);
+}
+
+/* Enforce Brand Warm Orange Color Overrides (Prevents Bootstrap Blue Leakage) */
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+.border-primary {
+    border-color: var(--primary) !important;
 }
 
 /* Accessibility Focus Ring */
