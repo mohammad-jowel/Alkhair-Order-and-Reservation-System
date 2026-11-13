@@ -1,6 +1,6 @@
 # Changes and Enhancements from Original Agent Instructions
 
-This document tracks all design refinements, architectural additions, and user interface enhancements introduced to the **Restoran Alkhair Order and Reservation System** compared to the baseline specification in [`AGENT_INSTRUCTIONS.md`](../AGENT_INSTRUCTIONS.md).
+This document tracks all design refinements, architectural additions, and user interface enhancements introduced to the **Restoran Alkhair Order and Reservation System** compared to the baseline specification in [`AGENT_INSTRUCTIONS.md`](./AGENT_INSTRUCTIONS.md).
 
 ---
 
