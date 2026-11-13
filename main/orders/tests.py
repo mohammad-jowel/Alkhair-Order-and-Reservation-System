@@ -274,3 +274,57 @@ class OrdersTestCase(TestCase):
         order.refresh_from_db()
         self.assertEqual(order.payment_method, 'cash')
         self.assertEqual(order.payment_status, 'pending')
+
+    def test_admin_manage_tables_view(self):
+        """Admin can access manage tables page and view table QR codes."""
+        RestaurantTable.objects.create(table_number=1, qr_token='token_tbl_1', is_active=True)
+        self.client.login(email='admin_orders@alkhair.com', password='AdminPassword123!')
+        response = self.client.get(reverse('orders:manage_tables'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Table #1')
+        self.assertContains(response, 'Table QR')
+
+    def test_non_admin_cannot_access_manage_tables(self):
+        """Customer is blocked with 403 from table QR management."""
+        self.client.login(email='cust1_orders@alkhair.com', password='CustomerPassword123!')
+        response = self.client.get(reverse('orders:manage_tables'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_create_table_success(self):
+        """Admin can assign a table number and generate a new table QR code."""
+        self.client.login(email='admin_orders@alkhair.com', password='AdminPassword123!')
+        response = self.client.post(reverse('orders:create_table'), {
+            'table_number': 15
+        })
+        self.assertEqual(response.status_code, 302)
+        table = RestaurantTable.objects.filter(table_number=15).first()
+        self.assertIsNotNone(table)
+        self.assertTrue(table.is_active)
+        self.assertTrue(len(table.qr_token) > 0)
+
+    def test_admin_create_table_duplicate_number_rejected(self):
+        """Creating a table with an already existing table number is rejected."""
+        RestaurantTable.objects.create(table_number=20, qr_token='token_tbl_20', is_active=True)
+        self.client.login(email='admin_orders@alkhair.com', password='AdminPassword123!')
+        response = self.client.post(reverse('orders:create_table'), {
+            'table_number': 20
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(RestaurantTable.objects.filter(table_number=20).count(), 1)
+
+    def test_admin_toggle_table_active(self):
+        """Admin can toggle table active status."""
+        table = RestaurantTable.objects.create(table_number=21, qr_token='token_tbl_21', is_active=True)
+        self.client.login(email='admin_orders@alkhair.com', password='AdminPassword123!')
+        response = self.client.post(reverse('orders:toggle_table_active', args=[table.table_id]))
+        self.assertEqual(response.status_code, 302)
+        table.refresh_from_db()
+        self.assertFalse(table.is_active)
+
+    def test_admin_delete_table(self):
+        """Admin can delete a table and remove its QR code."""
+        table = RestaurantTable.objects.create(table_number=22, qr_token='token_tbl_22', is_active=True)
+        self.client.login(email='admin_orders@alkhair.com', password='AdminPassword123!')
+        response = self.client.post(reverse('orders:delete_table', args=[table.table_id]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(RestaurantTable.objects.filter(table_id=table.table_id).exists())

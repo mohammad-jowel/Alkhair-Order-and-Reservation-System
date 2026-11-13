@@ -93,6 +93,11 @@
                             <i class="bi bi-calendar2-range"></i> Manage Reservations
                         </a>
                     </li>
+                    <li>
+                        <a class="sidebar-link {% if request.resolver_match.url_name == 'manage_tables' %}active{% endif %}" href="{% url 'orders:manage_tables' %}">
+                            <i class="bi bi-qr-code"></i> Table QR Codes
+                        </a>
+                    </li>
                     {% endif %}
                 </ul>
             </nav>

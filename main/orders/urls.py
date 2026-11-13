@@ -11,6 +11,11 @@ urlpatterns = [
     path('order/<int:order_id>/', views.order_detail, name='order_detail'),
     path('order/<int:order_id>/cancel/', views.cancel_order, name='cancel_order'),
     path('manage/', views.manage_orders, name='manage_orders'),
+    path('tables/', views.manage_tables, name='manage_tables'),
+    path('tables/create/', views.create_table, name='create_table'),
+    path('tables/<int:table_id>/toggle/', views.toggle_table_active, name='toggle_table_active'),
+    path('tables/<int:table_id>/delete/', views.delete_table, name='delete_table'),
+    path('tables/<int:table_id>/regenerate/', views.regenerate_table_qr, name='regenerate_table_qr'),
     path('clear-table/', views.clear_table, name='clear_table'),
     path('t/<str:qr_token>/', views.qr_table_entry, name='qr_table_entry'),
 ]

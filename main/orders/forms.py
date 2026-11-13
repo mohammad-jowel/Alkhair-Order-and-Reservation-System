@@ -1,6 +1,6 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Order
+from .models import Order, RestaurantTable
 
 
 class CheckoutForm(forms.Form):
@@ -78,3 +78,29 @@ class OrderUpdateStatusForm(forms.ModelForm):
             'order_status': forms.Select(attrs={'class': 'form-select form-select-sm'}),
             'payment_status': forms.Select(attrs={'class': 'form-select form-select-sm'}),
         }
+
+
+class RestaurantTableForm(forms.ModelForm):
+    """Admin form to create or configure dining tables."""
+    class Meta:
+        model = RestaurantTable
+        fields = ['table_number']
+        widgets = {
+            'table_number': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '1',
+                'placeholder': 'e.g. 11',
+                'required': 'required',
+            }),
+        }
+
+    def clean_table_number(self):
+        num = self.cleaned_data.get('table_number')
+        if not num or num < 1:
+            raise ValidationError("Table number must be at least 1.")
+        qs = RestaurantTable.objects.filter(table_number=num)
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise ValidationError(f"Table #{num} already exists. Please choose a different number.")
+        return num

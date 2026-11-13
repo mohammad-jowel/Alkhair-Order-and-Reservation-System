@@ -1,15 +1,22 @@
+import io
+import base64
+import secrets
+from pathlib import Path
 from decimal import Decimal
+import qrcode
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import Max
 from django.http import Http404
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from accounts.decorators import admin_required
 from menu.models import MenuItem
 from .models import Order, OrderItem, RestaurantTable
-from .forms import CheckoutForm, OrderUpdateStatusForm
+from .forms import CheckoutForm, OrderUpdateStatusForm, RestaurantTableForm
 from .cart import (
     get_cart,
     add_to_cart,
@@ -341,3 +348,135 @@ def clear_table(request):
     request.session.modified = True
     messages.info(request, 'Dine-in table cleared.')
     return redirect('menu:menu_list')
+
+
+def _generate_qr_base64(url):
+    """Generate in-memory base64 encoded PNG data URI for a QR code."""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=6,
+        border=2,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    return base64.b64encode(buffer.getvalue()).decode('ascii')
+
+
+@admin_required
+def manage_tables(request):
+    """
+    Admin management view to display all dining tables, their QR codes,
+    and generate/remove table QR codes for dine-in ordering.
+    """
+    tables = list(RestaurantTable.objects.all().order_by('table_number'))
+    max_table = RestaurantTable.objects.aggregate(Max('table_number'))['table_number__max']
+    next_table_number = (max_table + 1) if max_table else 1
+
+    # Attach QR code base64 and target URL to each table instance
+    for table in tables:
+        target_url = request.build_absolute_uri(reverse('orders:qr_table_entry', args=[table.qr_token]))
+        table.target_url = target_url
+        table.qr_base64 = _generate_qr_base64(target_url)
+
+    total_tables = len(tables)
+    active_tables = sum(1 for t in tables if t.is_active)
+    inactive_tables = total_tables - active_tables
+
+    form = RestaurantTableForm(initial={'table_number': next_table_number})
+
+    context = {
+        'tables': tables,
+        'total_tables': total_tables,
+        'active_tables': active_tables,
+        'inactive_tables': inactive_tables,
+        'next_table_number': next_table_number,
+        'form': form,
+    }
+    return render(request, 'orders/manage_tables.html', context)
+
+
+@admin_required
+def create_table(request):
+    """Create a new restaurant dining table with an automatically generated QR token."""
+    if request.method == 'POST':
+        form = RestaurantTableForm(request.POST)
+        if form.is_valid():
+            table = form.save(commit=False)
+            table.qr_token = secrets.token_urlsafe(16)
+            table.is_active = True
+            table.save()
+
+            # Optionally save QR PNG to media/qr directory
+            try:
+                qr_dir = Path(settings.MEDIA_ROOT) / 'qr'
+                qr_dir.mkdir(parents=True, exist_ok=True)
+                target_url = request.build_absolute_uri(reverse('orders:qr_table_entry', args=[table.qr_token]))
+                img = qrcode.make(target_url)
+                img.save(str(qr_dir / f"table_{table.table_number}.png"))
+            except Exception:
+                pass
+
+            messages.success(request, f'Table #{table.table_number} and QR code created successfully!')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, error)
+    return redirect('orders:manage_tables')
+
+
+@admin_required
+def toggle_table_active(request, table_id):
+    """Toggle dining table active status."""
+    if request.method == 'POST':
+        table = get_object_or_404(RestaurantTable, table_id=table_id)
+        table.is_active = not table.is_active
+        table.save()
+        status = 'Active' if table.is_active else 'Inactive'
+        messages.success(request, f'Table #{table.table_number} is now marked as {status}.')
+    return redirect('orders:manage_tables')
+
+
+@admin_required
+def delete_table(request, table_id):
+    """Delete a dining table and its QR code."""
+    if request.method == 'POST':
+        table = get_object_or_404(RestaurantTable, table_id=table_id)
+        num = table.table_number
+        table.delete()
+
+        # Clean up file if present
+        try:
+            file_path = Path(settings.MEDIA_ROOT) / 'qr' / f"table_{num}.png"
+            if file_path.exists():
+                file_path.unlink()
+        except Exception:
+            pass
+
+        messages.success(request, f'Table #{num} and its QR code have been removed.')
+    return redirect('orders:manage_tables')
+
+
+@admin_required
+def regenerate_table_qr(request, table_id):
+    """Regenerate a table's QR token (e.g. if code was compromised)."""
+    if request.method == 'POST':
+        table = get_object_or_404(RestaurantTable, table_id=table_id)
+        table.qr_token = secrets.token_urlsafe(16)
+        table.save()
+
+        # Update media file if present
+        try:
+            qr_dir = Path(settings.MEDIA_ROOT) / 'qr'
+            qr_dir.mkdir(parents=True, exist_ok=True)
+            target_url = request.build_absolute_uri(reverse('orders:qr_table_entry', args=[table.qr_token]))
+            img = qrcode.make(target_url)
+            img.save(str(qr_dir / f"table_{table.table_number}.png"))
+        except Exception:
+            pass
+
+        messages.success(request, f'New QR token generated for Table #{table.table_number}.')
+    return redirect('orders:manage_tables')
