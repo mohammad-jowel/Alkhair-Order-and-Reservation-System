@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Max
+from django.core.paginator import Paginator
 from django.http import Http404
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -255,10 +256,24 @@ def order_detail(request, order_id):
     if not request.user.is_admin and order.account != request.user:
         raise Http404("Order not found.")
 
+    status_form = None
+    if request.user.is_admin:
+        status_form = OrderUpdateStatusForm(request.POST or None, instance=order)
+        if request.method == 'POST':
+            if status_form.is_valid():
+                updated_order = status_form.save(commit=False)
+                if updated_order.order_status == 'cancelled' and updated_order.payment_status != 'paid':
+                    updated_order.payment_status = 'not_required'
+                updated_order.save()
+                messages.success(request, f'Order #{order.order_id} statuses updated.')
+                return redirect('orders:order_detail', order_id=order.order_id)
+            messages.error(request, 'Please choose valid order and payment statuses.')
+
     order_items = order.items.select_related('item').all()
     context = {
         'order': order,
         'order_items': order_items,
+        'status_form': status_form,
     }
     return render(request, 'orders/order_detail.html', context)
 
@@ -297,7 +312,15 @@ def manage_orders(request):
     Admin management view for orders with status and type filters.
     Allows advancing order status and marking cash orders as paid.
     """
+    active_count = Order.objects.exclude(order_status__in=['completed', 'cancelled']).count()
+    history_count = Order.objects.filter(order_status__in=['completed', 'cancelled']).count()
     orders = Order.objects.select_related('account', 'table').prefetch_related('items__item').all()
+
+    view_filter = request.GET.get('view', 'active')
+    if view_filter == 'active':
+        orders = orders.exclude(order_status__in=['completed', 'cancelled'])
+    elif view_filter == 'history':
+        orders = orders.filter(order_status__in=['completed', 'cancelled'])
 
     # Filter by order status
     status_filter = request.GET.get('status')
@@ -328,8 +351,15 @@ def manage_orders(request):
         messages.success(request, f'Order #{order.order_id} updated: {order.get_order_status_display()}, Payment: {order.get_payment_status_display()}.')
         return redirect('orders:manage_orders')
 
+    # Keep the queue compact and predictable while allowing staff to browse history.
+    paginator = Paginator(orders, 20)
+    page_obj = paginator.get_page(request.GET.get('page'))
     context = {
-        'orders': orders,
+        'orders': page_obj.object_list,
+        'page_obj': page_obj,
+        'view_filter': view_filter,
+        'active_count': active_count,
+        'history_count': history_count,
         'status_filter': status_filter,
         'type_filter': type_filter,
         'status_choices': Order.ORDER_STATUS_CHOICES,

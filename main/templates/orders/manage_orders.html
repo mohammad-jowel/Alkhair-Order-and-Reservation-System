@@ -5,112 +5,109 @@
 {% block content %}
 <div class="page-header mb-4">
     <h1><i class="bi bi-inbox text-primary me-2"></i>Order <span style="font-style: italic;">Management</span></h1>
-    <p>View incoming customer orders, update kitchen progress, and verify cash payments</p>
+    <p>Work through new orders, update kitchen progress, and check payment at a glance.</p>
 </div>
 
-<!-- Filters -->
+<div class="d-flex flex-wrap gap-2 mb-3" role="tablist" aria-label="Order views">
+    <a class="btn {% if view_filter == 'active' %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="?view=active">
+        Active orders <span class="badge text-bg-light ms-1">{{ active_count }}</span>
+    </a>
+    <a class="btn {% if view_filter == 'history' %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="?view=history">
+        Completed &amp; cancelled <span class="badge text-bg-light ms-1">{{ history_count }}</span>
+    </a>
+    <a class="btn {% if view_filter == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="?view=all">All orders</a>
+</div>
+
 <div class="card p-3 mb-4 bg-light border-0 shadow-sm">
     <form method="get" class="row g-2 align-items-end">
+        <input type="hidden" name="view" value="{{ view_filter }}">
         <div class="col-md-4 col-sm-6">
-            <label class="form-label small fw-semibold mb-1">Filter by Status</label>
+            <label class="form-label small fw-semibold mb-1">Order status</label>
             <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-                <option value="">All Statuses</option>
+                <option value="">All statuses</option>
                 {% for code, label in status_choices %}
                     <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-md-4 col-sm-6">
-            <label class="form-label small fw-semibold mb-1">Filter by Order Type</label>
+            <label class="form-label small fw-semibold mb-1">Order type</label>
             <select name="type" class="form-select form-select-sm" onchange="this.form.submit()">
-                <option value="">All Order Types</option>
+                <option value="">All order types</option>
                 {% for code, label in type_choices %}
                     <option value="{{ code }}" {% if type_filter == code %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-auto">
-            <a href="{% url 'orders:manage_orders' %}" class="btn btn-outline-secondary btn-sm" title="Reset filters">
-                <i class="bi bi-x-circle me-1"></i> Reset
-            </a>
+            <a href="{% url 'orders:manage_orders' %}?view={{ view_filter }}" class="btn btn-outline-secondary btn-sm">Reset filters</a>
         </div>
     </form>
 </div>
 
-<!-- Orders Table -->
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-        <h5 class="fw-bold mb-0">Orders List ({{ orders.count }})</h5>
+        <div>
+            <h5 class="fw-bold mb-0">{% if view_filter == 'history' %}Order history{% elif view_filter == 'all' %}All orders{% else %}Active orders{% endif %}</h5>
+            <small class="text-muted">{{ page_obj.paginator.count }} matching orders</small>
+        </div>
+        <small class="text-muted">Newest first · {{ page_obj.paginator.per_page }} per page</small>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive-wrapper">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 70px;">ID</th>
-                        <th>Customer</th>
-                        <th>Type</th>
-                        <th>Total</th>
-                        <th>Time</th>
-                        <th style="min-width: 250px;">Update Statuses</th>
-                        <th class="text-end" style="width: 100px;">Details</th>
+                        <th>ID / Time</th><th>Customer</th><th>Order</th><th>Total</th><th>Progress</th><th>Payment</th><th class="text-end">Details</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for order in orders %}
-                        <tr>
-                            <td class="fw-bold">#{{ order.order_id }}</td>
-                            <td>
-                                <div class="fw-semibold">{{ order.account.full_name }}</div>
-                                <div class="text-muted small">{{ order.account.phone }}</div>
-                            </td>
-                            <td>
-                                {% if order.order_type == 'dine_in' %}
-                                    <span class="badge badge-order-dinein"><i class="bi bi-geo-alt-fill"></i> Table #{{ order.table.table_number }}</span>
-                                {% elif order.order_type == 'delivery' %}
-                                    <span class="badge badge-order-delivery"><i class="bi bi-scooter"></i> Delivery</span>
-                                {% else %}
-                                    <span class="badge badge-order-takeaway"><i class="bi bi-bag-fill"></i> Takeaway</span>
-                                {% endif %}
-                            </td>
-                            <td class="fw-bold text-primary">RM {{ order.total_amount|floatformat:2 }}</td>
-                            <td class="text-muted small">{{ order.order_date|date:"d M, H:i" }}</td>
-                            <td>
-                                <form method="post" action="{% url 'orders:manage_orders' %}" class="d-flex flex-wrap gap-1 align-items-center">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="order_id" value="{{ order.order_id }}">
-                                    
-                                    <select name="order_status" class="form-select form-select-sm" style="width: 120px;" aria-label="Order status for #{{ order.order_id }}">
-                                        {% for code, label in status_choices %}
-                                            <option value="{{ code }}" {% if order.order_status == code %}selected{% endif %}>{{ label }}</option>
-                                        {% endfor %}
-                                    </select>
-
-                                    <select name="payment_status" class="form-select form-select-sm" style="width: 120px;" aria-label="Payment status for #{{ order.order_id }}">
-                                        {% for code, label in payment_choices %}
-                                            <option value="{{ code }}" {% if order.payment_status == code %}selected{% endif %}>{{ label }}</option>
-                                        {% endfor %}
-                                    </select>
-
-                                    <button type="submit" class="btn btn-sm btn-primary py-1 px-2" title="Save statuses">
-                                        <i class="bi bi-check-lg"></i>
-                                    </button>
-                                </form>
-                            </td>
-                            <td class="text-end">
-                                <a href="{% url 'orders:order_detail' order.order_id %}" class="btn-table-action">
-                                    View
-                                </a>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">No orders matching selected criteria.</td>
-                        </tr>
-                    {% endfor %}
+                    <tr>
+                        <td><div class="fw-bold">#{{ order.order_id }}</div><small class="text-muted">{{ order.order_date|date:"d M, H:i" }}</small></td>
+                        <td><div class="fw-semibold">{{ order.account.full_name }}</div><small class="text-muted">{{ order.account.phone }}</small></td>
+                        <td>
+                            {% if order.order_type == 'dine_in' %}<span class="badge badge-order-dinein"><i class="bi bi-geo-alt-fill"></i> Table #{{ order.table.table_number }}</span>
+                            {% elif order.order_type == 'delivery' %}<span class="badge badge-order-delivery"><i class="bi bi-scooter"></i> Delivery</span>
+                            {% else %}<span class="badge badge-order-takeaway"><i class="bi bi-bag-fill"></i> Takeaway</span>{% endif %}
+                            <div class="small text-muted mt-1">{{ order.items.count }} item{{ order.items.count|pluralize }}</div>
+                        </td>
+                        <td class="fw-bold text-primary">RM {{ order.total_amount|floatformat:2 }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ order.get_order_status_display }}</div>
+                            {% if order.order_status == 'pending' %}
+                                <form method="post" action="{% url 'orders:manage_orders' %}" class="mt-1">{% csrf_token %}<input type="hidden" name="order_id" value="{{ order.order_id }}"><input type="hidden" name="order_status" value="preparing"><button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-play-fill me-1"></i>Accept &amp; prepare</button></form>
+                            {% elif order.order_status == 'preparing' %}
+                                <form method="post" action="{% url 'orders:manage_orders' %}" class="mt-1">{% csrf_token %}<input type="hidden" name="order_id" value="{{ order.order_id }}"><input type="hidden" name="order_status" value="ready"><button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-check2-circle me-1"></i>Mark ready</button></form>
+                            {% elif order.order_status == 'ready' %}
+                                <form method="post" action="{% url 'orders:manage_orders' %}" class="mt-1">{% csrf_token %}<input type="hidden" name="order_id" value="{{ order.order_id }}"><input type="hidden" name="order_status" value="completed"><button class="btn btn-sm btn-outline-primary" type="submit"><i class="bi bi-check2 me-1"></i>Complete order</button></form>
+                            {% else %}<small class="text-muted">No action needed</small>{% endif %}
+                        </td>
+                        <td>
+                            {% if order.payment_status == 'paid' %}<span class="badge text-bg-success">Paid</span>
+                            {% elif order.payment_status == 'failed' %}<span class="badge text-bg-danger">Failed</span>
+                            {% elif order.payment_status == 'not_required' %}<span class="badge text-bg-secondary">Not required</span>
+                            {% else %}<span class="badge text-bg-warning">Pending</span>{% endif %}
+                            <div class="small text-muted mt-1">{{ order.get_payment_method_display }}</div>
+                            {% if order.payment_status == 'pending' and order.payment_method == 'cash' and order.order_status != 'cancelled' %}
+                                <form method="post" action="{% url 'orders:manage_orders' %}" class="mt-1">{% csrf_token %}<input type="hidden" name="order_id" value="{{ order.order_id }}"><input type="hidden" name="payment_status" value="paid"><button class="btn btn-sm btn-outline-success" type="submit"><i class="bi bi-cash-coin me-1"></i>Mark paid</button></form>
+                            {% endif %}
+                        </td>
+                        <td class="text-end"><a href="{% url 'orders:order_detail' order.order_id %}" class="btn btn-sm btn-outline-secondary">View</a></td>
+                    </tr>
+                    {% empty %}<tr><td colspan="7" class="text-center py-5 text-muted">No orders found. Try another view or adjust the filters.</td></tr>{% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+        <span class="small text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        <div class="btn-group">
+            {% if page_obj.has_previous %}<a class="btn btn-sm btn-outline-secondary" href="?view={{ view_filter }}&amp;status={{ status_filter|default:'' }}&amp;type={{ type_filter|default:'' }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+            {% if page_obj.has_next %}<a class="btn btn-sm btn-outline-secondary" href="?view={{ view_filter }}&amp;status={{ status_filter|default:'' }}&amp;type={{ type_filter|default:'' }}&amp;page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
