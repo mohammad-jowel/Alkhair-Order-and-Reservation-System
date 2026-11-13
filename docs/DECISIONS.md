@@ -102,4 +102,14 @@ This document records technical decisions, assumptions, and design rationale for
 - The admin dashboard's primary revenue card displays "Today's Sales" paired with "This month's sales" (`order_date__year` and `order_date__month`) instead of an "All-time" total.
 - This provides managers with meaningful, actionable monthly revenue tracking rather than lifetime figures that may be skewed or less useful for period-based reviews.
 
+---
+
+## 14. Dashboard Date Range Filtering and CSV Report Download
+
+- Added a date range filter (`start_date` and `end_date`) at the top of the admin dashboard.
+- Filtering dynamically updates the summary cards, Chart.js sales trend line, best-selling dishes, order distribution by channel, and recent orders table.
+- Added a dedicated "Download Report (CSV)" button (`/dashboard/report/download/`) that outputs a detailed CSV file containing executive revenue summaries and itemized order records with customer details, item quantities, and payment statuses.
+- Formatted with UTF-8 BOM encoding for direct, artifact-free viewing in Microsoft Excel.
+
+
 

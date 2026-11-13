@@ -125,7 +125,8 @@ prototype/
 ### App 6: `dashboard`
 - **Purpose**: Executive admin dashboard with ORM aggregations.
 - `views.py`:
-  - `dashboard`: Calculates today's sales, this month's sales, order counts, customer counts, 7-day sales trend (for Chart.js), orders by type, top 5 best-selling dishes, and recent 10 orders.
+  - `dashboard`: Calculates today's sales, this month's sales, order counts, customer counts, 7-day sales trend (or dynamic period sales trend for Chart.js), orders by type, top 5 best-selling dishes, and recent orders. Supports custom date range filtering via `?start_date=YYYY-MM-DD` and `?end_date=YYYY-MM-DD`.
+  - `download_report`: Exports a formatted sales and orders CSV report (`alkhair_sales_report_<dates>.csv`) with UTF-8 BOM encoding for direct opening in Microsoft Excel.
   - Contains multi-table join queries with comments explaining database integration.
 
 ---

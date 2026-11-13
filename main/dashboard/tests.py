@@ -107,3 +107,72 @@ class DashboardTestCase(TestCase):
         self.assertContains(response, 'Sales Total Rule')
         self.assertContains(response, 'Best-Selling Menu Items')
         self.assertContains(response, 'This month:')
+        self.assertContains(response, 'Download Report (CSV)')
+
+    def test_admin_dashboard_date_range_filter(self):
+        """Dashboard filters metrics when start_date and end_date are provided."""
+        self.client.login(email='admin_dash@alkhair.com', password='AdminPassword123!')
+        today = timezone.localdate()
+
+        # Create order today
+        o_today = Order.objects.create(
+            account=self.customer,
+            order_type='dine_in',
+            order_status='completed',
+            payment_method='cash',
+            payment_status='paid',
+            total_amount=Decimal('50.00')
+        )
+        OrderItem.objects.create(order=o_today, item=self.item, quantity=1, unit_price=Decimal('50.00'))
+
+        # Query dashboard with today as date range
+        today_str = today.strftime('%Y-%m-%d')
+        response = self.client.get(reverse('dashboard:dashboard'), {'start_date': today_str, 'end_date': today_str})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['is_filtered'])
+        self.assertEqual(response.context['period_sales'], Decimal('50.00'))
+        self.assertEqual(response.context['period_orders_count'], 1)
+        self.assertContains(response, 'Period Sales')
+        self.assertContains(response, 'Reset')
+
+    def test_download_report_csv_authenticated_admin(self):
+        """Admin can download a formatted CSV report filtered by date range."""
+        self.client.login(email='admin_dash@alkhair.com', password='AdminPassword123!')
+        today = timezone.localdate()
+
+        order = Order.objects.create(
+            account=self.customer,
+            order_type='delivery',
+            delivery_address='123 Test Street, Parit Raja',
+            order_status='completed',
+            payment_method='sim_card',
+            payment_status='paid',
+            total_amount=Decimal('66.00')
+        )
+        OrderItem.objects.create(order=order, item=self.item, quantity=3, unit_price=Decimal('22.00'))
+
+        today_str = today.strftime('%Y-%m-%d')
+        response = self.client.get(reverse('dashboard:download_report'), {'start_date': today_str, 'end_date': today_str})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('text/csv', response['Content-Type'])
+        self.assertIn('attachment;', response['Content-Disposition'])
+        self.assertIn('.csv', response['Content-Disposition'])
+
+        content = response.content.decode('utf-8')
+        self.assertIn('RESTORAN ALKHAIR - SALES & ORDER REPORT', content)
+        self.assertIn('Total Paid Revenue (RM)', content)
+        self.assertIn('123 Test Street, Parit Raja', content)
+        self.assertIn(str(order.order_id), content)
+
+    def test_customer_blocked_from_download_report(self):
+        """Customer is forbidden from downloading sales reports (403)."""
+        self.client.login(email='cust_dash@alkhair.com', password='CustomerPassword123!')
+        response = self.client.get(reverse('dashboard:download_report'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_unauthenticated_redirected_from_download_report(self):
+        """Unauthenticated visitor is redirected to login when trying to download report."""
+        response = self.client.get(reverse('dashboard:download_report'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('accounts:login'), response.url)

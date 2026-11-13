@@ -14,6 +14,7 @@ This document tracks all design refinements, architectural additions, and user i
 | **Admin Menu Filtering** | Flat table of all categories and items without search or filtering. | **Category Filter Dropdown & Quick Badges**: Category dropdown in `Menu Items` card header (`?category=<id>`) with reset button, plus clickable category counts in the summary table. | Admins can quickly isolate and update items within a single category (e.g. Grills or Shawarmas) in a large menu. |
 | **Filter Alignments** | Standard Bootstrap form rows with full-width reset buttons. | **Bottom-Aligned Compact Filter Controls**: Form rows use `align-items-end` with snug `col-auto` reset buttons labeled simply `Reset`. | Fixes vertical misalignment caused by input labels and prevents buttons from stretching awkwardly across the screen. |
 | **Dashboard Sales Metric** | Summary card displaying Today's sales with an all-time sales subtotal. | **This Month's Sales Metric**: Displays "This month: RM XX.XX" under Today's Sales instead of all-time sales. | Focuses revenue metrics on current monthly operational cycles rather than lifetime totals. |
+| **Date Range Filter & Report Download** | Static dashboard viewing only fixed current-day / 7-day data without export capabilities. | **Custom Date Range Filter & Sales CSV Report Download**: Admin can select `start_date` and `end_date` to filter all metrics, charts, and orders, plus one-click download of a comprehensive CSV sales report with UTF-8 BOM encoding. | Empowers management to generate custom periodic audit reports (e.g. weekly or monthly reviews) and export sales data directly into Excel/Sheets. |
 | **Visual Aesthetics** | Generic Bootstrap default styling (blue primary, neon warning/info badges). | **Warm Middle-Eastern Food Theme**: Charcoal darks, warm food-ordering orange (`#f97316`), custom order status badges, Plus Jakarta Sans typography, and styled user profile card. | Creates a professional, appetizing restaurant identity tailored to an authentic Arabic & BBQ establishment. |
 
 ---
@@ -66,6 +67,17 @@ This document tracks all design refinements, architectural additions, and user i
 - **View**: `dashboard.views.dashboard`
 - **Template**: `templates/dashboard/dashboard.html`
 - **Mechanism**: Calculates `this_month_sales` by filtering paid orders where `order_date__year=today.year` and `order_date__month=today.month`. The metric card displays `Today's Sales` prominently with a supporting `This month: RM XX.XX` figure below it, replacing the previous `All-time` metric.
+
+### F. Date Range Filtering & Report CSV Download
+- **Routes**:
+  - `/dashboard/?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD`
+  - `/dashboard/report/download/?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD`
+- **Views**: `dashboard.views.dashboard` and `dashboard.views.download_report`
+- **Template**: `templates/dashboard/dashboard.html`
+- **Capabilities**:
+  - **Custom Period Filtering**: Admin selects "From" and "To" dates; metrics, 30-day dynamic chart trend, channel breakdowns, best sellers, and recent orders update dynamically.
+  - **Quick Reset**: One-click reset button restores default current-day/7-day view.
+  - **CSV Report Download**: Generates a downloadable CSV (`alkhair_sales_report_<dates>.csv`) with UTF-8 BOM encoding for seamless opening in Microsoft Excel. Includes executive summary metrics (Period, Total Orders, Paid Revenue) and an itemized breakdown of all orders with items, pricing, customer details, and payment/fulfillment status.
 
 ---
 
