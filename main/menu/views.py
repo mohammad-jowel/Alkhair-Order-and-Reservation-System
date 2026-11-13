@@ -36,12 +36,22 @@ def menu_list(request):
 @admin_required
 def manage_menu(request):
     """Admin management dashboard for menu categories and menu items."""
-    categories = MenuCategory.objects.all()
+    categories = MenuCategory.objects.prefetch_related('items').all()
     items = MenuItem.objects.select_related('category').all().order_by('category__category_name', 'item_name')
+
+    selected_category_id = request.GET.get('category')
+    if selected_category_id:
+        try:
+            category_id_int = int(selected_category_id)
+            items = items.filter(category_id=category_id_int)
+            selected_category_id = str(category_id_int)
+        except (ValueError, TypeError):
+            selected_category_id = None
 
     context = {
         'categories': categories,
         'items': items,
+        'selected_category_id': selected_category_id,
     }
     return render(request, 'menu/manage_menu.html', context)
 

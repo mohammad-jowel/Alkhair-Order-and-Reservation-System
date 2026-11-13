@@ -57,6 +57,29 @@ class MenuTestCase(TestCase):
         self.assertContains(response, 'Beef Kebab')
         self.assertContains(response, 'Sold Out Dish')
 
+    def test_admin_filter_manage_menu_by_category(self):
+        """Admin can filter menu items by category."""
+        other_category = MenuCategory.objects.create(category_name='Drinks')
+        other_item = MenuItem.objects.create(
+            category=other_category,
+            item_name='Arabic Tea',
+            price=Decimal('5.00'),
+            is_available=True
+        )
+
+        self.client.login(email='admin_menu@alkhair.com', password='AdminPassword123!')
+        # Filter by Drinks category
+        response = self.client.get(reverse('menu:manage_menu') + f'?category={other_category.category_id}')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Arabic Tea')
+        self.assertNotContains(response, 'Beef Kebab')
+
+        # Reset / All categories
+        response_all = self.client.get(reverse('menu:manage_menu'))
+        self.assertEqual(response_all.status_code, 200)
+        self.assertContains(response_all, 'Arabic Tea')
+        self.assertContains(response_all, 'Beef Kebab')
+
     def test_admin_add_menu_item(self):
         """Admin can add a new menu item."""
         self.client.login(email='admin_menu@alkhair.com', password='AdminPassword123!')

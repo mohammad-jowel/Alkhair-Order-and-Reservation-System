@@ -39,7 +39,11 @@
                         <tr>
                             <td>#{{ cat.category_id }}</td>
                             <td class="fw-semibold">{{ cat.category_name }}</td>
-                            <td><span class="badge bg-secondary">{{ cat.items.count }} items</span></td>
+                            <td>
+                                <a href="{% url 'menu:manage_menu' %}?category={{ cat.category_id }}" class="text-decoration-none" title="Filter items by {{ cat.category_name }}">
+                                    <span class="badge {% if selected_category_id == cat.category_id|stringformat:'s' %}bg-primary{% else %}bg-secondary{% endif %}">{{ cat.items.count }} items</span>
+                                </a>
+                            </td>
                             <td class="text-end">
                                 <a href="{% url 'menu:edit_category' cat.category_id %}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Edit Category">
                                     <i class="bi bi-pencil"></i>
@@ -65,8 +69,22 @@
 
 <!-- Menu Items Table -->
 <div class="card shadow-sm border-0">
-    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+    <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
         <h5 class="fw-bold mb-0">Menu Items ({{ items.count }})</h5>
+        <form method="get" class="d-flex align-items-center gap-2 m-0">
+            <label for="categoryFilter" class="small text-muted fw-semibold mb-0 text-nowrap"><i class="bi bi-funnel me-1"></i>Category:</label>
+            <select id="categoryFilter" name="category" class="form-select form-select-sm" style="min-width: 180px;" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.category_id }}" {% if selected_category_id == cat.category_id|stringformat:"s" %}selected{% endif %}>{{ cat.category_name }}</option>
+                {% endfor %}
+            </select>
+            {% if selected_category_id %}
+                <a href="{% url 'menu:manage_menu' %}" class="btn btn-sm btn-outline-secondary text-nowrap" title="Reset filter">
+                    <i class="bi bi-x-circle me-1"></i>Reset
+                </a>
+            {% endif %}
+        </form>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive-wrapper">
@@ -121,7 +139,13 @@
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">No menu items found.</td>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                {% if selected_category_id %}
+                                    No menu items found in this category. <a href="{% url 'menu:manage_menu' %}" class="text-primary ms-1">View all items</a>
+                                {% else %}
+                                    No menu items found.
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
