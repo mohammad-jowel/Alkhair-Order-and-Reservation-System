@@ -185,7 +185,32 @@ class Command(BaseCommand):
 
         c1, c2, c3, c4, c5 = customers
 
-        # 15 demo orders spread over 7 days, using all 5 customers
+        # Older orders (8-30 days ago) for realistic all-time totals
+        # (customer, days_ago, order_type, status, payment, pay_status, table_idx, items_spec)
+        older_order_specs = [
+            # 30 days ago
+            (c1, 30, 'delivery',  'completed', 'sim_banking', 'paid', None, [(0, 1), (1, 1)]),
+            (c3, 28, 'takeaway',  'completed', 'cash',        'paid', None, [(3, 2)]),
+            # 25 days ago
+            (c2, 25, 'dine_in',   'completed', 'sim_ewallet', 'paid', 0,    [(4, 1), (6, 1)]),
+            (c5, 24, 'delivery',  'completed', 'sim_card',    'paid', None, [(9, 2), (2, 1)]),
+            # 20 days ago
+            (c4, 20, 'takeaway',  'completed', 'cash',        'paid', None, [(7, 1), (8, 2)]),
+            (c1, 19, 'dine_in',   'completed', 'sim_banking', 'paid', 1,    [(0, 3), (5, 1)]),
+            (c3, 18, 'delivery',  'completed', 'sim_ewallet', 'paid', None, [(10, 1), (11, 1)]),
+            # 15 days ago
+            (c2, 15, 'takeaway',  'completed', 'cash',        'paid', None, [(1, 2), (3, 1)]),
+            (c5, 14, 'dine_in',   'completed', 'sim_card',    'paid', 2,    [(6, 1), (12, 1)]),
+            (c4, 13, 'delivery',  'completed', 'sim_banking', 'paid', None, [(0, 2), (8, 1)]),
+            # 10 days ago
+            (c1, 10, 'takeaway',  'completed', 'sim_ewallet', 'paid', None, [(2, 1), (4, 1)]),
+            (c3, 10, 'dine_in',   'completed', 'cash',        'paid', 3,    [(9, 1), (13, 2)]),
+            (c2,  9, 'delivery',  'completed', 'sim_card',    'paid', None, [(5, 2), (7, 1)]),
+            (c5,  8, 'takeaway',  'completed', 'sim_banking', 'paid', None, [(11, 1), (14, 1)]),
+            (c4,  8, 'dine_in',   'completed', 'cash',        'paid', 0,    [(0, 1), (3, 1), (6, 1)]),
+        ]
+
+        # Recent orders (last 7 days) with mixed statuses
         # (customer, days_ago, order_type, status, payment, pay_status, table_idx, items_spec)
         order_specs = [
             # 6 days ago
@@ -214,7 +239,10 @@ class Command(BaseCommand):
 
         hours = [11, 12, 13, 14, 17, 18, 19, 20, 21, 12, 15, 19, 11, 13, 18]
 
-        for idx, spec in enumerate(order_specs):
+        # Combine older + recent orders
+        all_order_specs = older_order_specs + order_specs
+
+        for idx, spec in enumerate(all_order_specs):
             customer, days_ago, o_type, o_status, pay_method, pay_status, tbl_idx, items_spec = spec
 
             order_day = today - timedelta(days=days_ago)
