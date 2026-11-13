@@ -22,11 +22,11 @@
 
         <!-- ============ SIDEBAR ============ -->
         <aside class="sidebar" id="sidebar" aria-label="Main Navigation">
-            <a class="sidebar-brand" href="{% url 'core:home' %}">
+            <a class="sidebar-brand" href="{% if user.is_authenticated and user.is_admin %}{% url 'dashboard:dashboard' %}{% else %}{% url 'core:home' %}{% endif %}">
                 <span class="brand-icon"><i class="bi bi-fire"></i></span>
                 <div>
                     <div class="brand-title">Restoran Alkhair</div>
-                    <div class="brand-subtitle">Middle-Eastern &amp; BBQ</div>
+                    <div class="brand-subtitle">{% if user.is_authenticated and user.is_admin %}Admin Portal{% else %}Middle-Eastern &amp; BBQ{% endif %}</div>
                 </div>
             </a>
 
@@ -41,6 +41,7 @@
             <!-- Unified Navigation List -->
             <nav class="sidebar-nav-container">
                 <ul class="sidebar-nav">
+                    {% if not user.is_authenticated or not user.is_admin %}
                     <li>
                         <a class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">
                             <i class="bi bi-house"></i> Home
@@ -56,6 +57,7 @@
                             <i class="bi bi-info-circle"></i> About &amp; Contact
                         </a>
                     </li>
+                    {% endif %}
 
                     {% if user.is_authenticated and not user.is_admin %}
                     <li>
