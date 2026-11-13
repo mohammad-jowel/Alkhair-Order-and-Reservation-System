@@ -6,9 +6,9 @@
 
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 fw-bold mb-1"><i class="bi bi-speedometer2 text-primary me-2"></i>Executive Business Dashboard</h1>
-        <p class="text-muted small mb-0">Live restaurant performance, sales analytics, and fulfillment tracking</p>
+    <div class="page-header mb-0">
+        <h1><i class="bi bi-speedometer2 text-primary me-2"></i>Dashboard</h1>
+        <p>Live restaurant performance, sales analytics, and fulfillment tracking</p>
     </div>
     <div class="d-flex gap-2">
         <a href="{% url 'orders:manage_orders' %}" class="btn btn-outline-secondary btn-sm">
@@ -304,11 +304,11 @@ document.addEventListener('DOMContentLoaded', function () {
             datasets: [{
                 label: 'Sales (RM)',
                 data: dataValues,
-                borderColor: '#c2410c',
-                backgroundColor: 'rgba(194, 65, 12, 0.08)',
+                borderColor: '#f97316',
+                backgroundColor: 'rgba(249, 115, 22, 0.08)',
                 fill: true,
                 tension: 0.3,
-                pointBackgroundColor: '#c2410c',
+                pointBackgroundColor: '#f97316',
                 pointRadius: 5
             }]
         },

@@ -1,84 +1,68 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Restoran Alkhair - Authentic Middle-Eastern Cuisine &amp; Charcoal Grills{% endblock %}
+{% block title %}Restoran Alkhair - Authentic Middle-Eastern Cuisine & Charcoal Grills{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="mb-5">
-    <div class="row g-4 align-items-stretch">
-        <!-- Hero Pitch & Action -->
-        <div class="col-lg-7 d-flex flex-column justify-content-center">
-            <div>
-                <span class="hero-badge mb-3">
-                    <i class="bi bi-fire"></i> Authentic Middle-Eastern &amp; BBQ Cuisine
+<!-- Hero Section — Dark Warm Style -->
+<section class="hero-section">
+    <div class="row g-4 align-items-center">
+        <!-- Hero Left — Text & CTA -->
+        <div class="col-lg-7">
+            <h1>
+                Authentic Flavors,<br>
+                Fresh Charcoal Grills
+            </h1>
+
+            <p class="hero-desc mb-4">
+                Welcome to Restoran Alkhair in Parit Raja, Johor. Enjoy slow-roasted lamb shanks, hand-sliced shawarma wraps, and skewers grilled to order over live charcoal embers.
+            </p>
+
+            <div class="d-flex flex-wrap gap-3 mb-4">
+                <a href="{% url 'menu:menu_list' %}" class="btn btn-primary btn-cta">
+                    <i class="bi bi-journal-text"></i> View Menu & Order
+                </a>
+                <a href="{% url 'reservations:reservation_list' %}" class="btn btn-outline-light btn-cta-outline">
+                    <i class="bi bi-calendar2-check"></i> Book a Table
+                </a>
+            </div>
+
+            <div class="hero-feature-pills">
+                <span class="hero-feature-pill">
+                    <i class="bi bi-check-circle-fill"></i> 100% Halal
                 </span>
-
-                <h1 class="display-5 fw-bold mb-3 text-dark">
-                    Fresh Charcoal Grills &amp; Authentic Flavors
-                </h1>
-
-                <p class="lead text-secondary mb-4" style="font-size: 1.05rem;">
-                    Welcome to Restoran Alkhair in Parit Raja, Johor. Experience authentic Arabian hospitality, slow-roasted lamb shanks, hand-sliced shawarma wraps, and skewers grilled to order over live charcoal embers.
-                </p>
-
-                <div class="d-flex flex-wrap gap-3 mb-4 text-secondary small fw-medium">
-                    <span class="d-inline-flex align-items-center gap-1">
-                        <i class="bi bi-check-circle-fill text-success"></i> 100% Halal Ingredients
-                    </span>
-                    <span class="d-inline-flex align-items-center gap-1">
-                        <i class="bi bi-check-circle-fill text-success"></i> Charcoal-Fired Daily
-                    </span>
-                    <span class="d-inline-flex align-items-center gap-1">
-                        <i class="bi bi-check-circle-fill text-success"></i> Dine-in, Takeaway &amp; Delivery
-                    </span>
-                </div>
-
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="{% url 'menu:menu_list' %}" class="btn btn-primary px-4 py-2">
-                        <i class="bi bi-journal-text"></i> View Menu &amp; Order
-                    </a>
-                    <a href="{% url 'reservations:reservation_list' %}" class="btn btn-outline-secondary px-4 py-2">
-                        <i class="bi bi-calendar2-check"></i> Book a Table
-                    </a>
-                </div>
+                <span class="hero-feature-pill">
+                    <i class="bi bi-check-circle-fill"></i> Charcoal-Fired Daily
+                </span>
+                <span class="hero-feature-pill">
+                    <i class="bi bi-check-circle-fill"></i> Dine-in & Takeaway
+                </span>
             </div>
         </div>
 
-        <!-- Hero Right Column — Restaurant Photo Placeholder & Quick Highlights -->
-        <div class="col-lg-5 d-flex flex-column justify-content-between">
-            <!-- Photo Placeholder Box (No SVG) -->
-            <div class="card border mb-3 flex-grow-1" style="min-height: 200px;">
-                <div class="hero-photo-placeholder h-100">
-                    <i class="bi bi-image"></i>
-                    <span class="fw-semibold text-dark small mb-1">Restaurant Dining Room &amp; Grill</span>
-                    <span class="text-muted" style="font-size: 0.75rem;">(Photo placeholder — to be updated later)</span>
-                </div>
+        <!-- Hero Right — Photo + Quick Info -->
+        <div class="col-lg-5">
+            <div class="hero-photo-area mb-3" style="height: 220px;">
+                <i class="bi bi-camera placeholder-icon"></i>
             </div>
 
-            <!-- Quick Service Cards Row -->
             <div class="row g-2">
                 <div class="col-6">
-                    <div class="card p-3 h-100 border bg-white">
+                    <div class="quick-info-card">
                         <div class="d-flex align-items-center gap-2 mb-1">
-                            <i class="bi bi-qr-code text-primary fs-5"></i>
-                            <span class="fw-bold text-dark small">Dine-in Order</span>
+                            <i class="bi bi-qr-code fs-5"></i>
+                            <span class="info-label">QR Ordering</span>
                         </div>
-                        <p class="text-muted small mb-0" style="font-size: 0.78rem;">
-                            Scan table QR code to order directly to your seat.
-                        </p>
+                        <span class="info-text">Scan table code to order directly</span>
                     </div>
                 </div>
-
                 <div class="col-6">
-                    <div class="card p-3 h-100 border bg-white">
+                    <div class="quick-info-card">
                         <div class="d-flex align-items-center gap-2 mb-1">
-                            <i class="bi bi-clock-history text-primary fs-5"></i>
-                            <span class="fw-bold text-dark small">Hours Today</span>
+                            <i class="bi bi-clock fs-5"></i>
+                            <span class="info-label">Hours Today</span>
                         </div>
-                        <p class="text-muted small mb-0" style="font-size: 0.78rem;">
-                            {{ opening_time }} – {{ closing_time }} (Daily)
-                        </p>
+                        <span class="info-text">{{ opening_time }} – {{ closing_time }}</span>
                     </div>
                 </div>
             </div>
@@ -86,118 +70,70 @@
     </div>
 </section>
 
-<!-- Accessible Multimedia Element: Charcoal Hearth Live -->
-<section class="mb-5" aria-labelledby="multimedia-heading">
-    <div class="multimedia-grill-box">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-            <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="flame-animation" role="img" aria-label="Live charcoal grill status indicator"></span>
-                    <h3 id="multimedia-heading" class="h6 mb-0 text-white fw-bold">Live Charcoal Hearth Active</h3>
-                </div>
-                <p class="mb-0 text-light small opacity-75">
-                    Fresh skewers and meats prepared directly over genuine charcoal embers for authentic regional smokiness.
-                </p>
-                <!-- Text fallback for accessibility / screen readers -->
-                <p class="visually-hidden">
-                    Multimedia presentation: Live charcoal hearth indicator showing active barbeque preparation in kitchen.
-                </p>
-            </div>
-            <a href="{% url 'menu:menu_list' %}" class="btn btn-light btn-sm fw-semibold">
-                Browse BBQ Dishes <i class="bi bi-arrow-right ms-1"></i>
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- Featured Categories / Specialties -->
+<!-- Featured Menu — House Specialties -->
 <section class="mb-5">
     <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-2">
-        <div>
-            <h2 class="h4 fw-bold mb-1">House Specialties</h2>
-            <p class="text-muted small mb-0">Signature dishes from our authentic Middle-Eastern kitchen</p>
+        <div class="section-heading mb-0">
+            <h2>House <span>Specialties</span></h2>
+            <p>Signature dishes from our Middle-Eastern kitchen</p>
         </div>
-        <a href="{% url 'menu:menu_list' %}" class="fw-semibold small text-primary text-decoration-none">
-            View All Dishes <i class="bi bi-arrow-right"></i>
+        <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-primary btn-sm">
+            View Full Menu <i class="bi bi-arrow-right ms-1"></i>
         </a>
     </div>
 
     <div class="row g-4">
-        <!-- Specialty 1: Charcoal Kebabs -->
+        <!-- Specialty 1 -->
         <div class="col-lg-4 col-md-6">
             <div class="card dish-card">
                 <div class="dish-img-container">
-                    <div class="dish-placeholder">
-                        <i class="bi bi-image"></i>
-                        <span class="dish-placeholder-label">Charcoal Kebabs Photo</span>
-                    </div>
+                    <i class="bi bi-camera placeholder-icon"></i>
                 </div>
-                <div class="card-body d-flex flex-column p-3">
-                    <div class="d-flex justify-content-between align-items-baseline mb-1">
-                        <h5 class="fw-bold fs-6 mb-0 text-dark">Charcoal Kebabs</h5>
-                        <span class="fw-bold text-danger">From RM 18.00</span>
-                    </div>
-                    <span class="badge bg-light text-secondary border align-self-start mb-2" style="font-size: 0.7rem;">Charcoal Grill</span>
-                    <p class="text-muted small flex-grow-1 mb-3">
-                        Juicy skewers of seasoned minced beef and chicken, served with fresh flatbread or spiced rice.
-                    </p>
-                    <div class="pt-2 border-top">
-                        <a href="{% url 'menu:menu_list' %}" class="btn btn-sm btn-outline-primary w-100">
-                            <i class="bi bi-cart-plus me-1"></i> Order Now
+                <div class="dish-card-body">
+                    <h5 class="dish-title">Charcoal Kebabs</h5>
+                    <p class="dish-desc">Juicy skewers of seasoned minced beef and chicken with fresh flatbread.</p>
+                    <div class="dish-footer">
+                        <span class="dish-price">RM 18.00</span>
+                        <a href="{% url 'menu:menu_list' %}" class="btn btn-add-cart">
+                            <i class="bi bi-cart-plus"></i> Order
                         </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Specialty 2: Authentic Shawarma -->
+        <!-- Specialty 2 -->
         <div class="col-lg-4 col-md-6">
             <div class="card dish-card">
                 <div class="dish-img-container">
-                    <div class="dish-placeholder">
-                        <i class="bi bi-image"></i>
-                        <span class="dish-placeholder-label">Shawarma Wrap Photo</span>
-                    </div>
+                    <i class="bi bi-camera placeholder-icon"></i>
                 </div>
-                <div class="card-body d-flex flex-column p-3">
-                    <div class="d-flex justify-content-between align-items-baseline mb-1">
-                        <h5 class="fw-bold fs-6 mb-0 text-dark">Authentic Shawarma</h5>
-                        <span class="fw-bold text-danger">From RM 7.00</span>
-                    </div>
-                    <span class="badge bg-light text-secondary border align-self-start mb-2" style="font-size: 0.7rem;">Warm Wraps</span>
-                    <p class="text-muted small flex-grow-1 mb-3">
-                        Slow-roasted sliced meat with homemade garlic sauce, fries, and pickled vegetables rolled in warm bread.
-                    </p>
-                    <div class="pt-2 border-top">
-                        <a href="{% url 'menu:menu_list' %}" class="btn btn-sm btn-outline-primary w-100">
-                            <i class="bi bi-cart-plus me-1"></i> Order Now
+                <div class="dish-card-body">
+                    <h5 class="dish-title">Authentic Shawarma</h5>
+                    <p class="dish-desc">Slow-roasted sliced meat with garlic sauce, fries, and pickled vegetables.</p>
+                    <div class="dish-footer">
+                        <span class="dish-price">RM 7.00</span>
+                        <a href="{% url 'menu:menu_list' %}" class="btn btn-add-cart">
+                            <i class="bi bi-cart-plus"></i> Order
                         </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Specialty 3: Lamb Shank & Mandy -->
+        <!-- Specialty 3 -->
         <div class="col-lg-4 col-md-6">
             <div class="card dish-card">
                 <div class="dish-img-container">
-                    <div class="dish-placeholder">
-                        <i class="bi bi-image"></i>
-                        <span class="dish-placeholder-label">Lamb Shank Photo</span>
-                    </div>
+                    <i class="bi bi-camera placeholder-icon"></i>
                 </div>
-                <div class="card-body d-flex flex-column p-3">
-                    <div class="d-flex justify-content-between align-items-baseline mb-1">
-                        <h5 class="fw-bold fs-6 mb-0 text-dark">Lamb Shank &amp; Mandy</h5>
-                        <span class="fw-bold text-danger">RM 35.00</span>
-                    </div>
-                    <span class="badge bg-light text-secondary border align-self-start mb-2" style="font-size: 0.7rem;">Signature Rice</span>
-                    <p class="text-muted small flex-grow-1 mb-3">
-                        Tender slow-braised lamb shank seasoned with Yemeni spices and served on fragrant saffron basmati rice.
-                    </p>
-                    <div class="pt-2 border-top">
-                        <a href="{% url 'menu:menu_list' %}" class="btn btn-sm btn-outline-primary w-100">
-                            <i class="bi bi-cart-plus me-1"></i> Order Now
+                <div class="dish-card-body">
+                    <h5 class="dish-title">Lamb Shank & Mandy</h5>
+                    <p class="dish-desc">Tender lamb shank with Yemeni spices on fragrant saffron basmati rice.</p>
+                    <div class="dish-footer">
+                        <span class="dish-price">RM 35.00</span>
+                        <a href="{% url 'menu:menu_list' %}" class="btn btn-add-cart">
+                            <i class="bi bi-cart-plus"></i> Order
                         </a>
                     </div>
                 </div>
@@ -206,48 +142,40 @@
     </div>
 </section>
 
-<!-- Why Restoran Alkhair — Quality Features -->
+<!-- Why Choose Us — Feature Cards -->
 <section class="mb-4">
-    <div class="row g-3">
+    <div class="section-heading text-center mb-4">
+        <h2>Why Choose <span>Us</span></h2>
+    </div>
+
+    <div class="row g-4">
         <div class="col-md-4">
-            <div class="card p-3 border bg-white h-100">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-2 rounded bg-light text-primary">
-                        <i class="bi bi-fire fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-1 text-dark">Charcoal Preparation</h6>
-                        <p class="text-muted small mb-0">Genuine pit embers for authentic Arabian flavor and smokiness.</p>
-                    </div>
+            <div class="feature-card">
+                <div class="feature-card-icon">
+                    <i class="bi bi-fire"></i>
                 </div>
+                <h6>Charcoal Preparation</h6>
+                <p>Genuine pit embers for authentic Arabian flavor and smokiness.</p>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card p-3 border bg-white h-100">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-2 rounded bg-light text-primary">
-                        <i class="bi bi-phone fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-1 text-dark">Table-Side QR Ordering</h6>
-                        <p class="text-muted small mb-0">Scan your table token to place orders straight to our kitchen.</p>
-                    </div>
+            <div class="feature-card">
+                <div class="feature-card-icon">
+                    <i class="bi bi-phone"></i>
                 </div>
+                <h6>Table-Side QR Ordering</h6>
+                <p>Scan your table token to place orders straight to our kitchen.</p>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card p-3 border bg-white h-100">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="p-2 rounded bg-light text-primary">
-                        <i class="bi bi-award fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-1 text-dark">100% Halal Certified</h6>
-                        <p class="text-muted small mb-0">Fresh meats and authentic spices prepared daily in Parit Raja.</p>
-                    </div>
+            <div class="feature-card">
+                <div class="feature-card-icon">
+                    <i class="bi bi-award"></i>
                 </div>
+                <h6>100% Halal Certified</h6>
+                <p>Fresh meats and authentic spices prepared daily in Parit Raja.</p>
             </div>
         </div>
     </div>

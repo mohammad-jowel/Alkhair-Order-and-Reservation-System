@@ -7,13 +7,13 @@ class CorePagesTestCase(TestCase):
         self.client = Client()
 
     def test_home_page_status_and_content(self):
-        """Home page loads successfully with 200 OK and contains brand and multimedia."""
+        """Home page loads successfully with 200 OK and contains brand and key content."""
         response = self.client.get(reverse('core:home'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'core/home.html')
         self.assertTemplateUsed(response, 'base.html')
         self.assertContains(response, 'Restoran Alkhair')
-        self.assertContains(response, 'Charcoal Hearth Live')
+        self.assertContains(response, 'Charcoal Grills')
 
     def test_about_page_status_and_content(self):
         """About & Contact page loads with location and hours."""

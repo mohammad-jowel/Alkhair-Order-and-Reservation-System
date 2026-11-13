@@ -1,82 +1,80 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}About &amp; Contact - Restoran Alkhair{% endblock %}
+{% block title %}About & Contact - Restoran Alkhair{% endblock %}
 
 {% block content %}
-<div class="row g-5 mb-5 pt-2">
+<div class="row g-5 mb-5">
+    <!-- Left — Story -->
     <div class="col-lg-6">
-        <span class="hero-badge mb-3"><i class="bi bi-geo-alt"></i> Parit Raja, Batu Pahat</span>
-        <h1 class="display-5 fw-bold mb-3">About Restoran Alkhair</h1>
-        <p class="lead text-secondary fs-6">
+        <div class="page-header">
+            <span class="hero-badge mb-3"><i class="bi bi-geo-alt"></i> Parit Raja, Batu Pahat</span>
+            <h1>About <span style="font-style: italic;">Restoran Alkhair</span></h1>
+        </div>
+
+        <p class="text-secondary" style="font-size: 0.95rem; line-height: 1.7;">
             Restoran Alkhair brings genuine Middle-Eastern and Arabian culinary hospitality to Parit Raja, Johor.
         </p>
         <p class="text-secondary">
             From our fresh charcoal-grilled kebabs and traditional Moffa fish to signature garlic shawarma wraps and slow-cooked lamb shanks, every dish is prepared with fresh ingredients and authentic regional spices.
         </p>
 
-        <!-- Clean Photo Placeholder Box (No SVG) -->
-        <div class="photo-placeholder-box my-4">
-            <i class="bi bi-image fs-1 mb-2"></i>
-            <span class="fw-semibold text-dark small mb-1">Restaurant Kitchen &amp; Charcoal Grill Photograph</span>
-            <span class="text-muted" style="font-size: 0.75rem;">(Photo placeholder — to be updated later)</span>
+        <!-- Photo Placeholder -->
+        <div class="clean-photo-container my-4" style="height: 220px; border-radius: var(--radius-xl);">
+            <i class="bi bi-camera placeholder-icon"></i>
         </div>
     </div>
 
+    <!-- Right — Contact Info Card -->
     <div class="col-lg-6">
-        <div class="card p-4 h-100 border">
-            <div class="d-flex align-items-center gap-2 mb-4 pb-2 border-bottom">
-                <div class="p-2 rounded-circle" style="background: var(--primary-soft); color: var(--primary);">
-                    <i class="bi bi-geo-alt-fill fs-4"></i>
+        <div class="about-info-card">
+            <h2 class="h5 fw-bold mb-4">Location & Contact</h2>
+
+            <div class="about-info-item">
+                <div class="info-icon">
+                    <i class="bi bi-pin-map"></i>
                 </div>
                 <div>
-                    <h2 class="h4 fw-bold mb-0">Location &amp; Inquiries</h2>
-                    <p class="text-muted small mb-0">Visit our dining room or contact us directly</p>
+                    <h6>Restaurant Address</h6>
+                    <p>Restoran Alkhair<br>Parit Raja, 86400 Batu Pahat, Johor, Malaysia</p>
+                    <span class="badge bg-light text-muted border small">[Placeholder: Update with lot/shop number]</span>
                 </div>
             </div>
 
-            <div class="mb-4 d-flex gap-3">
-                <i class="bi bi-pin-map text-primary fs-4 mt-1"></i>
+            <div class="about-info-item">
+                <div class="info-icon">
+                    <i class="bi bi-clock"></i>
+                </div>
                 <div>
-                    <h6 class="fw-bold mb-1">Restaurant Address</h6>
-                    <p class="text-secondary mb-1">
-                        Restoran Alkhair<br>
-                        Parit Raja, 86400 Batu Pahat, Johor, Malaysia
-                    </p>
-                    <span class="badge bg-light text-muted border small">[Group Placeholder: Update with lot/shop number]</span>
+                    <h6>Operating Hours</h6>
+                    <p>Monday to Sunday: <strong>{{ opening_time }} – {{ closing_time }}</strong></p>
+                    <span class="badge bg-light text-muted border small">[Placeholder: Confirm exact hours]</span>
                 </div>
             </div>
 
-            <div class="mb-4 d-flex gap-3">
-                <i class="bi bi-clock-history text-primary fs-4 mt-1"></i>
+            <div class="about-info-item">
+                <div class="info-icon">
+                    <i class="bi bi-telephone"></i>
+                </div>
                 <div>
-                    <h6 class="fw-bold mb-1">Operating Hours</h6>
-                    <p class="text-secondary mb-1">
-                        Monday to Sunday: <strong>{{ opening_time }} – {{ closing_time }}</strong>
-                    </p>
-                    <span class="badge bg-light text-muted border small">[Group Placeholder: Confirm exact hours]</span>
+                    <h6>Phone Contact</h6>
+                    <p>+60 12-345 6789 / +60 7-123 4567</p>
+                    <span class="badge bg-light text-muted border small">[Placeholder: Update phone number]</span>
                 </div>
             </div>
 
-            <div class="mb-4 d-flex gap-3">
-                <i class="bi bi-telephone text-primary fs-4 mt-1"></i>
+            <div class="about-info-item" style="border-bottom: none;">
+                <div class="info-icon">
+                    <i class="bi bi-envelope"></i>
+                </div>
                 <div>
-                    <h6 class="fw-bold mb-1">Phone Contact</h6>
-                    <p class="text-secondary mb-1">+60 12-345 6789 / +60 7-123 4567</p>
-                    <span class="badge bg-light text-muted border small">[Group Placeholder: Update phone number]</span>
+                    <h6>Email Contact</h6>
+                    <p>contact@alkhair-restaurant.com</p>
+                    <span class="badge bg-light text-muted border small">[Placeholder: Update email]</span>
                 </div>
             </div>
 
-            <div class="mb-4 d-flex gap-3">
-                <i class="bi bi-envelope text-primary fs-4 mt-1"></i>
-                <div>
-                    <h6 class="fw-bold mb-1">Email Contact</h6>
-                    <p class="text-secondary mb-1">contact@alkhair-restaurant.com</p>
-                    <span class="badge bg-light text-muted border small">[Group Placeholder: Update email]</span>
-                </div>
-            </div>
-
-            <hr class="my-4">
+            <hr class="my-3">
 
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <div>
