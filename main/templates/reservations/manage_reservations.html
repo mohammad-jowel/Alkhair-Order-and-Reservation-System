@@ -10,8 +10,8 @@
 
 <!-- Filters -->
 <div class="card p-3 mb-4 bg-light border-0 shadow-sm">
-    <form method="get" class="row g-2 align-items-center">
-        <div class="col-md-4">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-4 col-sm-6">
             <label class="form-label small fw-semibold mb-1">Filter by Status</label>
             <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
                 <option value="">All Statuses</option>
@@ -20,9 +20,9 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col-md-4 d-flex align-items-end">
-            <a href="{% url 'reservations:manage_reservations' %}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-x-circle me-1"></i> Reset Filter
+        <div class="col-auto">
+            <a href="{% url 'reservations:manage_reservations' %}" class="btn btn-outline-secondary btn-sm" title="Reset filter">
+                <i class="bi bi-x-circle me-1"></i> Reset
             </a>
         </div>
     </form>
