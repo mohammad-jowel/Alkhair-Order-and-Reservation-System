@@ -65,3 +65,33 @@ This document records technical decisions, assumptions, and design rationale for
 - The QR routing pattern is exposed at the root level `/t/<qr_token>/` as well as `/orders/t/<qr_token>/`.
 - This ensures short, clean URLs that encode easily into compact QR code matrices, improving camera readability across mobile devices.
 
+---
+
+## 9. Interactive Table QR Management Section
+
+- The original specification provided only a backend CLI command (`generate_table_qr.py`) to generate static PNG files.
+- To provide a complete, standalone administrative system, a dedicated web interface (`orders:manage_tables`) was added.
+- The interface renders real-time in-memory Base64 QR code previews, allows administrators to assign custom table numbers, toggle active/inactive dining tables, test dine-in sessions directly, download PNG files, and print physical tent cards using `@media print`.
+
+---
+
+## 10. Universal In-App Confirmation Modal
+
+- Native browser `window.confirm()` dialogs (`127.0.0.1:8000 says...`) were replaced with a centralized Bootstrap confirmation modal (`#universalConfirmModal` in `base.html`).
+- An unobtrusive event interceptor in `main.js` listens for `data-confirm` across all forms, buttons, and links.
+- Contextual modal dialogs dynamically adapt colors, icons, titles, and confirmation labels for destructive actions (deletions, cancellations, cart clears, reservation rejections).
+
+---
+
+## 11. Category Filtering in Admin Menu Management
+
+- Added a category filter dropdown in `manage_menu.html` (`?category=<id>`) to allow admins to quickly focus on specific dish categories (e.g. Grills, Shawarmas).
+- Linked category item count badges in the summary table to instant filtered views.
+
+---
+
+## 12. Specialized Admin Navigation
+
+- Logged-in administrators have public customer links (*Home*, *Menu & Order*, *About & Contact*) hidden from their sidebar navigation.
+- The admin workspace starts immediately at **Dashboard**, followed by management sections: **Manage Menu**, **Manage Orders**, **Manage Reservations**, and **Table QR Codes**.
+

@@ -1,0 +1,23 @@
+# Changes and Enhancements from Original Agent Instructions
+
+See full documentation in [docs/CHANGES_FROM_INSTRUCTIONS.md](docs/CHANGES_FROM_INSTRUCTIONS.md).
+
+This document tracks all design refinements, architectural additions, and user interface enhancements introduced to the **Restoran Alkhair Order and Reservation System** compared to the baseline specification in [`AGENT_INSTRUCTIONS.md`](AGENT_INSTRUCTIONS.md).
+
+---
+
+## 1. Summary of Changes
+
+| Area | Baseline Specification (`AGENT_INSTRUCTIONS.md`) | Current Prototype Implementation | Rationale |
+| :--- | :--- | :--- | :--- |
+| **Table QR Management** | CLI management command only (`generate_table_qr.py`) generating static PNGs to `media/qr/`. | **Dedicated Admin GUI (`orders:manage_tables`)**: Interactive page to view all table QRs, assign table numbers, create tables, toggle availability, test links, download PNGs, and print table tent cards. | Enables restaurant staff to manage and print physical table cards directly from the browser without server terminal access. |
+| **Admin Navigation** | Single shared navigation bar showing both public visitor links (*Home*, *Menu*, *About*) and admin links (*Dashboard*, *Manage...*). | **Specialized Admin Workspace**: Public customer-facing links are hidden for logged-in administrators. The sidebar begins cleanly at **Dashboard** and includes **Table QR Codes**. | Streamlines admin workflows and eliminates visual clutter in administrative back-office mode. |
+| **Confirmation Popups** | Browser native `confirm()` alerts (`127.0.0.1:8000 says...`). | **Universal In-App Confirmation Modal (`#universalConfirmModal`)**: Global themed Bootstrap modal replacing all browser popups with contextual icons, messages, and action buttons. | Native alerts look outdated, display raw IP hostnames, block the browser thread, and conflict with modern UI design standards. |
+| **Admin Menu Filtering** | Flat table of all categories and items without search or filtering. | **Category Filter Dropdown & Quick Badges**: Category dropdown in `Menu Items` card header (`?category=<id>`) with reset button, plus clickable category counts in the summary table. | Admins can quickly isolate and update items within a single category (e.g. Grills or Shawarmas) in a large menu. |
+| **Filter Alignments** | Standard Bootstrap form rows with full-width reset buttons. | **Bottom-Aligned Compact Filter Controls**: Form rows use `align-items-end` with snug `col-auto` reset buttons labeled simply `Reset`. | Fixes vertical misalignment caused by input labels and prevents buttons from stretching awkwardly across the screen. |
+| **Visual Aesthetics** | Generic Bootstrap default styling (blue primary, neon warning/info badges). | **Warm Middle-Eastern Food Theme**: Charcoal darks, warm food-ordering orange (`#f97316`), custom order status badges, Plus Jakarta Sans typography, and styled user profile card. | Creates a professional, appetizing restaurant identity tailored to an authentic Arabic & BBQ establishment. |
+
+---
+
+## 2. Detailed Documentation
+For complete technical notes, workflows, and implementation details, see [docs/CHANGES_FROM_INSTRUCTIONS.md](docs/CHANGES_FROM_INSTRUCTIONS.md).

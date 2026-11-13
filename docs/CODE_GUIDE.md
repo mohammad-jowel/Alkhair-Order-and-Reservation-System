@@ -75,7 +75,7 @@ prototype/
   - `MenuItemForm`: Adds/edits items with price validation (> 0) and image size limit (5MB).
 - `views.py`:
   - `menu_list`: Categorized public menu with category filter pills and Add to Cart forms.
-  - `manage_menu`: Admin catalog table displaying all categories and items.
+  - `manage_menu`: Admin catalog table displaying all categories and items, with an integrated category dropdown filter (`?category=<id>`) and clickable category count badges.
   - `add_category` / `edit_category` / `delete_category`: Category CRUD.
   - `add_item` / `edit_item` / `delete_item`: Menu item CRUD. Deleting an item with existing orders is caught by `ProtectedError` and blocked with a friendly explanation.
   - `toggle_availability`: One-click button to make items active or inactive.
@@ -92,6 +92,7 @@ prototype/
 - `forms.py`:
   - `CheckoutForm`: Validates order type (`delivery`, `takeaway`, or `dine_in`), ensures delivery address is provided if delivery, and accepts simulated payment methods.
   - `OrderUpdateStatusForm`: Admin status update form.
+  - `RestaurantTableForm`: Form to assign unique table numbers and create new dining tables with automatic QR token generation.
 - `views.py`:
   - `cart_view`: Displays cart dishes, allows updating quantities, and presents checkout options.
   - `checkout`: Wraps order creation in `transaction.atomic()`, computes total from live database prices, copies current item price to `OrderItem.unit_price`, and saves order.
@@ -99,7 +100,12 @@ prototype/
   - `my_orders`: List of orders belonging to the logged-in customer.
   - `order_detail`: Full order breakdown (ownership enforced: other users' orders return 404).
   - `cancel_order`: Allows customer to cancel pending orders. Unpaid cancelled orders get `payment_status = not_required`.
-  - `manage_orders`: Admin order dashboard with status filters and quick status update dropdowns.
+  - `manage_orders`: Admin order dashboard with status/type filters and compact, aligned reset button.
+  - `manage_tables`: Admin table QR dashboard displaying all tables with live Base64 QR previews, add table form, metrics, and print sheet.
+  - `create_table`: Assigns table number, generates unique `qr_token`, and saves table.
+  - `toggle_table_active`: Toggles dining table between active and inactive.
+  - `delete_table`: Deletes table record and removes its QR code with confirmation modal.
+  - `regenerate_table_qr`: Generates a fresh QR token for an existing table.
   - `qr_table_entry`: `/t/<qr_token>/` route that assigns table to session and redirects to menu.
   - `clear_table`: Clears active table from session.
 - `management/commands/generate_table_qr.py`:
@@ -193,3 +199,10 @@ To resolve this relationship into Third Normal Form (3NF), the join table `order
 2. ORM aggregates live sales: `Order.objects.filter(payment_status='paid').exclude(order_status='cancelled')`.
 3. Chart.js visualizes 7-day revenue trend.
 4. Three-table join queries identify top-selling dishes and highest-spending patrons.
+
+### Flow 7: Table QR Code Management & Physical Printing
+1. Admin navigates to `/orders/tables/`.
+2. Live Base64 QR code previews are generated on the fly for all active and inactive dining tables.
+3. Admin can input a table number in the "Add New Table" section to generate a new table and unique QR token immediately.
+4. Admin clicks "Print All QRs" to invoke `@media print` layout, producing printable tent cards formatted for restaurant tables.
+5. Deletion of tables (or categories, items, orders, reservations) triggers the **Universal In-App Confirmation Modal** in `base.html` instead of standard browser popups.

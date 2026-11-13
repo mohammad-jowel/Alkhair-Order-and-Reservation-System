@@ -130,6 +130,22 @@ This checklist details manual test procedures for each of the 13 pages and end-t
 - **Expected Result**: Table of all customer bookings with status filter.
 - **Step 2**: Click "Confirm" on a pending reservation.
 - **Expected Result**: Status updates to "Confirmed".
+- **Step 3**: Click "Reject" on a pending reservation.
+- **Expected Result**: In-app confirmation modal appears ("Confirm Rejection"). Clicking Reject updates status to "Rejected".
+
+### Page 15: Admin Table QR Codes (`/orders/tables/`)
+- **Step 1**: Click "Table QR Codes" in admin sidebar.
+- **Expected Result**:
+  - Displays summary metrics: Total Tables, Active Dine-in, and Inactive Tables.
+  - Cards grid displaying all table numbers, active badges, and live Base64 QR code previews.
+- **Step 2**: Click "+ Add New Table", enter table number (e.g. 11), and submit.
+- **Expected Result**: Table #11 and unique QR token are generated and appear immediately in the grid.
+- **Step 3**: Click "Test" button on a table card.
+- **Expected Result**: Opens `/t/<qr_token>/` in a new tab, activating the dine-in session for that table.
+- **Step 4**: Click "Print All QRs".
+- **Expected Result**: Print preview renders table tent cards with restaurant branding and large scannable QR codes.
+- **Step 5**: Click the trash icon to delete a table.
+- **Expected Result**: In-app confirmation modal appears ("Delete Table QR"). Clicking Delete Table removes the table record.
 
 ---
 
@@ -148,7 +164,7 @@ This checklist details manual test procedures for each of the 13 pages and end-t
 
 ## 4. Screenshot List for Academic Report & User Manual
 
-Take these 16 screenshots for your coursework submission:
+Take these 17 screenshots for your coursework submission:
 
 1. `01_home_page.png`: Home page showing banner, operating hours, and charcoal grill animation.
 2. `02_public_menu.png`: Public menu with category pills and price tags.
@@ -163,6 +179,7 @@ Take these 16 screenshots for your coursework submission:
 11. `11_customer_profile.png`: Profile information and password change section.
 12. `12_qr_table_badge.png`: Navbar showing active "Table #X" badge and dine-in welcome banner.
 13. `13_admin_dashboard.png`: Executive dashboard showing summary metrics and Chart.js 7-day trend.
-14. `14_admin_manage_menu.png`: Menu management table with availability toggle buttons.
+14. `14_admin_manage_menu.png`: Menu management table with category filter dropdown and availability toggles.
 15. `15_admin_manage_orders.png`: Order fulfillment management with status filters and update controls.
 16. `16_admin_manage_reservations.png`: Reservation confirmation interface with Confirm/Reject actions.
+17. `17_admin_manage_tables.png`: Table QR management dashboard showing scannable QR cards and print preview.
