@@ -98,15 +98,17 @@ class DashboardTestCase(TestCase):
 
         # Check calculated metrics in context
         self.assertEqual(response.context['today_sales'], Decimal('44.00'))
-        self.assertEqual(response.context['this_month_sales'], Decimal('44.00'))
+        self.assertEqual(response.context['today_orders_count'], 3)
         self.assertEqual(response.context['total_orders_count'], 3)
         self.assertEqual(response.context['pending_orders_count'], 1)
         self.assertEqual(response.context['pending_reservations_count'], 1)
 
-        # Check page text contains business rule notice and monthly sales subtext
+        # Check page text contains business rule notice and today's metrics
         self.assertContains(response, 'Sales Total Rule')
         self.assertContains(response, 'Best-Selling Menu Items')
-        self.assertContains(response, 'This month:')
+        self.assertEqual(response.context['card_sales_title'], "Today's Sales")
+        self.assertEqual(response.context['card_orders_title'], "Today's Orders")
+        self.assertContains(response, 'Paid orders today')
         self.assertContains(response, 'Download Report (CSV)')
 
     def test_admin_dashboard_date_range_filter(self):

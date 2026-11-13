@@ -97,10 +97,10 @@ This document records technical decisions, assumptions, and design rationale for
 
 ---
 
-## 13. Monthly Sales Metric on Dashboard
+## 13. Today-First Dashboard Metrics
 
-- The admin dashboard's primary revenue card displays "Today's Sales" paired with "This month's sales" (`order_date__year` and `order_date__month`) instead of an "All-time" total.
-- This provides managers with meaningful, actionable monthly revenue tracking rather than lifetime figures that may be skewed or less useful for period-based reviews.
+- By default, the admin dashboard displays strictly **Today's** figures: "Today's Sales" (paid orders today) and "Today's Orders" (orders placed today), keeping all cards coherent and eliminating confusion between daily, weekly, and monthly numbers.
+- When an administrator uses the Date Range filter, the cards dynamically switch to "Period Sales" and "Period Orders" for the selected date span.
 
 ---
 

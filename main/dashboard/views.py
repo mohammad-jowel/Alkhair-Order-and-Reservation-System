@@ -44,35 +44,28 @@ def dashboard(request):
     Admin dashboard calculating metrics via Django ORM aggregation.
     Displays summary cards, sales Chart.js chart, best-selling items,
     orders by type, recent orders, and pending reservations.
-    Supports optional date filtering via ?start_date=YYYY-MM-DD and ?end_date=YYYY-MM-DD.
+    By default, metrics represent TODAY.
+    Supports optional date filtering via ?start_date=YYYY-MM-DD and ?end_date=YYYY-MM-DD
+    to inspect custom periods and generate downloadable CSV reports.
     """
     today = timezone.localdate()
     start_date, end_date, _, _ = _parse_date_range(request)
     is_filtered = bool(start_date or end_date)
 
-    # 1. Summary Cards (Standard Anchored Metrics)
+    # 1. Base Summary Metrics
     # Sales Total Rule: sum of total_amount for orders with payment_status = 'paid' and order_status != 'cancelled'
     today_sales = Order.objects.filter(
         order_date__date=today,
         payment_status='paid'
     ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
 
-    this_month_sales = Order.objects.filter(
-        order_date__year=today.year,
-        order_date__month=today.month,
-        payment_status='paid'
-    ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-
-    total_sales_all_time = Order.objects.filter(
-        payment_status='paid'
-    ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
-
+    today_orders_count = Order.objects.filter(order_date__date=today).count()
     total_orders_count = Order.objects.count()
     pending_orders_count = Order.objects.filter(order_status='pending').count()
     total_customers_count = Account.objects.filter(role='customer').count()
     pending_reservations_count = Reservation.objects.filter(status='pending').count()
 
-    # Filtered Orders Base QuerySet
+    # Filtered Orders QuerySet
     filtered_orders = Order.objects.all()
     if start_date:
         filtered_orders = filtered_orders.filter(order_date__date__gte=start_date)
@@ -83,6 +76,25 @@ def dashboard(request):
         payment_status='paid'
     ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
     period_orders_count = filtered_orders.count()
+
+    # Determine Active Dashboard Scope (Default: Today; Filtered: Selected Range)
+    if is_filtered:
+        dashboard_orders = filtered_orders
+        dashboard_sales = period_sales
+        dashboard_orders_count = period_orders_count
+        card_sales_title = "Period Sales"
+        card_orders_title = "Period Orders"
+        channel_title = "Orders by Channel (Selected Period)"
+        orders_table_title = "Orders in Selected Period"
+    else:
+        today_orders = Order.objects.filter(order_date__date=today)
+        dashboard_orders = today_orders if today_orders.exists() else Order.objects.all()
+        dashboard_sales = today_sales
+        dashboard_orders_count = today_orders_count
+        card_sales_title = "Today's Sales"
+        card_orders_title = "Today's Orders"
+        channel_title = "Today's Orders by Channel"
+        orders_table_title = "Today's Orders"
 
     # 2. Sales per day for the Chart.js line chart
     labels_chart = []
@@ -110,10 +122,9 @@ def dashboard(request):
             sales_chart.append(float(day_sales))
         chart_title = "Daily Sales Trend (Last 7 Days)"
 
-    # 3. Best-Selling Menu Items (Top 5 by quantity sold in filtered period)
-    # Join 1: order_item -> menu_item -> menu_category
+    # 3. Best-Selling Menu Items (in active scope)
     best_selling_items = OrderItem.objects.filter(
-        order__in=filtered_orders,
+        order__in=dashboard_orders,
         order__payment_status='paid'
     ).exclude(
         order__order_status='cancelled'
@@ -127,8 +138,8 @@ def dashboard(request):
         total_revenue=Sum(F('quantity') * F('unit_price'))
     ).order_by('-total_quantity')[:5]
 
-    # 4. Orders by Type (in filtered period)
-    type_counts_raw = filtered_orders.values('order_type').annotate(count=Count('order_id'))
+    # 4. Orders by Type (in active scope)
+    type_counts_raw = dashboard_orders.values('order_type').annotate(count=Count('order_id'))
     type_counts = {item['order_type']: item['count'] for item in type_counts_raw}
     orders_by_type = [
         {'label': 'Dine-in', 'count': type_counts.get('dine_in', 0), 'badge': 'bg-warning text-dark'},
@@ -136,13 +147,13 @@ def dashboard(request):
         {'label': 'Takeaway', 'count': type_counts.get('takeaway', 0), 'badge': 'bg-secondary'},
     ]
 
-    # 5. Recent Orders (matching filtered period, up to 10)
-    recent_orders = filtered_orders.select_related('account', 'table').prefetch_related('items__item').order_by('-order_date')[:10]
+    # 5. Orders Table (in active scope, up to 10)
+    recent_orders = dashboard_orders.select_related('account', 'table').prefetch_related('items__item').order_by('-order_date')[:10]
 
-    # 6. Top Customers by Spending (in filtered period)
+    # 6. Top Customers by Spending (in active scope)
     top_customers = Account.objects.filter(
         role='customer',
-        orders__in=filtered_orders,
+        orders__in=dashboard_orders,
         orders__payment_status='paid'
     ).exclude(
         orders__order_status='cancelled'
@@ -153,14 +164,19 @@ def dashboard(request):
 
     context = {
         'today_sales': today_sales,
-        'this_month_sales': this_month_sales,
-        'total_sales_all_time': total_sales_all_time,
-        'period_sales': period_sales,
-        'period_orders_count': period_orders_count,
+        'today_orders_count': today_orders_count,
         'total_orders_count': total_orders_count,
         'pending_orders_count': pending_orders_count,
         'total_customers_count': total_customers_count,
         'pending_reservations_count': pending_reservations_count,
+        'dashboard_sales': dashboard_sales,
+        'dashboard_orders_count': dashboard_orders_count,
+        'card_sales_title': card_sales_title,
+        'card_orders_title': card_orders_title,
+        'channel_title': channel_title,
+        'orders_table_title': orders_table_title,
+        'period_sales': period_sales,
+        'period_orders_count': period_orders_count,
         'start_date': start_date.strftime('%Y-%m-%d') if start_date else '',
         'end_date': end_date.strftime('%Y-%m-%d') if end_date else '',
         'is_filtered': is_filtered,
