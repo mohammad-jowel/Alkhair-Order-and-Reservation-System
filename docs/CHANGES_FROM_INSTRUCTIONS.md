@@ -88,4 +88,4 @@ All underlying relational database constraints, business rules, and academic cri
 2. **Join Table Integrity**: `order_item` resolves the M:N relationship with `UniqueConstraint(fields=['order', 'item'])` and price snapshots (`unit_price`).
 3. **Atomic Pricing**: Total order calculations occur strictly on the server inside `transaction.atomic()`.
 4. **Demonstration Payments**: Simulated gateway banner and test actions with strict separation between `order_status` and `payment_status`.
-5. **Automated Test Suite**: Extended from 39 tests to **46 automated tests**, maintaining 100% pass rate.
+5. **Automated Test Suite**: Extended from 39 tests to **50 automated tests**, maintaining 100% pass rate.

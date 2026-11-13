@@ -80,6 +80,12 @@ Populate initial categories, 26 menu items, 10 restaurant tables with QR tokens,
 python main/manage.py seed_demo
 ```
 
+To also populate realistic demo orders across the past week and reservations relative to today with 5 dedicated demo customer accounts:
+```bash
+python main/manage.py seed_demo_data
+```
+*(Supports `python main/manage.py seed_demo_data --clear` to re-seed, or `--delete` to wipe all demo records.)*
+
 ### Step 8: Generate table QR codes
 Generate QR code PNG images for all active restaurant tables:
 ```bash
@@ -97,24 +103,27 @@ Visit `http://127.0.0.1:8000/` in your web browser.
 
 ## 3. Demonstration Accounts & Logins
 
-After running `seed_demo`, use these credentials to explore:
+After running `seed_demo` or `seed_demo_data`, use these credentials to explore:
 
 | Role | Email | Password | Purpose |
 |---|---|---|---|
-| **Admin** | `admin@alkhair.com` | `Admin1234!` | Dashboard, menu CRUD, manage orders, confirm reservations |
-| **Customer 1** | `customer1@gmail.com` | `Customer1234!` | Ordering, QR dine-in, reservations, profile editing |
-| **Customer 2** | `customer2@gmail.com` | `Customer1234!` | Secondary customer account |
+| **Admin** | `admin@alkhair.com` | `Admin1234!` | Dashboard, menu CRUD, manage orders, confirm reservations, table QR management |
+| **Demo Customer 1** | `customer1@demo.com` | `Customer1234!` | Ordering, QR dine-in, reservations, profile editing |
+| **Demo Customer 2** | `customer2@demo.com` | `Customer1234!` | Pre-seeded with delivery orders & bookings |
+| **Demo Customer 3–5** | `customer3@demo.com` – `customer5@demo.com` | `Customer1234!` | Additional customers with order & reservation history |
+| **Initial Customer 1** | `customer1@gmail.com` | `Customer1234!` | Primary customer created by `seed_demo` |
+| **Initial Customer 2** | `customer2@gmail.com` | `Customer1234!` | Secondary customer created by `seed_demo` |
 
 ---
 
 ## 4. Running Automated Tests
 
-Run the complete 39-test automated test suite across all 6 applications:
+Run the complete 50-test automated test suite across all 6 applications:
 ```bash
 python main/manage.py test core accounts menu orders reservations dashboard
 ```
 
-All tests execute against an isolated test database and verify:
+All 50 tests execute against an isolated test database and verify:
 - Registration, password hashing, and generic login error handling
 - Role-based access control (`admin_required` blocking customers with 403)
 - Ownership security (customers receiving 404 on other customers' orders and bookings)

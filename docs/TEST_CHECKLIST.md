@@ -102,12 +102,21 @@ This checklist details manual test procedures for each of the 13 pages and end-t
 ### Page 11: Admin Dashboard (`/dashboard/`)
 - **Step 1**: Log in as `admin@alkhair.com`. Click "Dashboard".
 - **Expected Result**:
-  - Summary cards show Today's Sales, Total Orders, Pending Orders, Total Customers.
+  - Summary cards show Today's Sales (with "This month's sales"), Total Orders, Pending Orders, Total Customers.
+  - Date Range Filter bar appears at the top ("From Date", "To Date", "Filter", "Reset", and "Download Report (CSV)" button).
   - Chart.js renders 7-day sales line chart.
   - Best-selling menu items table lists top 5 dishes.
   - Orders by channel summary (Dine-in, Delivery, Takeaway).
   - Recent orders table (last 10).
   - One-line business rule notice displayed at the top.
+- **Step 2**: Select a date range (e.g. past 7 days) and click "Filter".
+- **Expected Result**:
+  - Summary cards update to show "Period Sales" and "Period Orders".
+  - Chart.js updates daily sales trend across the selected dates.
+  - Recent orders and top items filter to the selected period.
+  - "Reset" button appears to clear filters.
+- **Step 3**: Click "Download Report (CSV)".
+- **Expected Result**: Downloads `alkhair_sales_report_<dates>.csv` containing executive revenue summary and itemized orders breakdown with customer, items, and payment details.
 
 ### Page 12: Admin Manage Menu (`/menu/manage/`)
 - **Step 1**: Click "Manage Menu" in admin navbar.
