@@ -68,11 +68,33 @@ class Command(BaseCommand):
             action='store_true',
             help='Delete all demo-seeded data (orders, reservations) and re-seed.',
         )
+        parser.add_argument(
+            '--delete',
+            action='store_true',
+            help='Wipe ALL demo data (orders, reservations, and demo accounts) and exit.',
+        )
 
     @transaction.atomic
     def handle(self, *args, **options):
         now = timezone.now()
         today = timezone.localdate()
+
+        # ── Full delete: wipe everything and exit ────────────────────────
+        if options['delete']:
+            del_orders, _ = Order.objects.filter(
+                delivery_address__contains=DEMO_TAG
+            ).delete()
+            del_res, _ = Reservation.objects.filter(
+                note__contains=DEMO_TAG
+            ).delete()
+            demo_emails = [c['email'] for c in DEMO_CUSTOMERS]
+            del_accounts, _ = Account.objects.filter(email__in=demo_emails).delete()
+            self.stdout.write(self.style.WARNING(
+                f'Deleted {del_orders} order records, {del_res} reservations, '
+                f'and {del_accounts} demo accounts.'
+            ))
+            self.stdout.write(self.style.SUCCESS('All demo data wiped.'))
+            return
 
         # ── 1. Create demo customer accounts ─────────────────────────────
         customers = self._ensure_demo_customers()
