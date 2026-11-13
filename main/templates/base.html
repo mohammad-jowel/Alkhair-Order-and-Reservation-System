@@ -107,7 +107,7 @@
                     </a>
                     <form method="post" action="{% url 'accounts:logout' %}" class="mt-2">
                         {% csrf_token %}
-                        <button type="submit" class="sidebar-link w-100 border-0 bg-transparent text-secondary" style="cursor:pointer; font-size: 0.8rem; padding: 0.4rem 0.65rem;">
+                        <button type="submit" class="btn-sidebar-logout" aria-label="Sign out">
                             <i class="bi bi-box-arrow-right"></i> Logout
                         </button>
                     </form>
@@ -152,10 +152,11 @@
 
                     <!-- Cart Link -->
                     {% if not user.is_authenticated or not user.is_admin %}
-                        <a href="{% url 'orders:cart_view' %}" class="btn btn-sm btn-outline-secondary position-relative">
-                            <i class="bi bi-cart3"></i> Cart
+                        <a href="{% url 'orders:cart_view' %}" class="btn-cart-nav position-relative">
+                            <i class="bi bi-bag-fill"></i>
+                            <span>Cart</span>
                             {% if request.session.cart_count %}
-                                <span class="badge bg-danger text-white rounded-pill ms-1">{{ request.session.cart_count }}</span>
+                                <span class="badge-cart-count">{{ request.session.cart_count }}</span>
                             {% endif %}
                         </a>
                     {% endif %}

@@ -98,11 +98,11 @@
                     <div class="text-muted small">Order Type</div>
                     <div>
                         {% if order.order_type == 'dine_in' %}
-                            <span class="badge bg-warning text-dark"><i class="bi bi-geo-alt-fill"></i> Dine-in (Table #{{ order.table.table_number }})</span>
+                            <span class="badge badge-order-dinein"><i class="bi bi-geo-alt-fill"></i> Dine-in (Table #{{ order.table.table_number }})</span>
                         {% elif order.order_type == 'delivery' %}
-                            <span class="badge bg-info text-dark"><i class="bi bi-truck"></i> Delivery</span>
+                            <span class="badge badge-order-delivery"><i class="bi bi-scooter"></i> Delivery</span>
                         {% else %}
-                            <span class="badge bg-secondary"><i class="bi bi-bag"></i> Takeaway (Self-Pickup)</span>
+                            <span class="badge badge-order-takeaway"><i class="bi bi-bag-fill"></i> Takeaway (Self-Pickup)</span>
                         {% endif %}
                     </div>
                 </div>
@@ -130,13 +130,13 @@
                     <div class="text-muted small">Payment Status</div>
                     <div>
                         {% if order.payment_status == 'paid' %}
-                            <span class="badge bg-success px-2 py-1"><i class="bi bi-check-circle"></i> Paid</span>
+                            <span class="badge badge-status-paid"><i class="bi bi-check-circle"></i> Paid</span>
                         {% elif order.payment_status == 'pending' %}
-                            <span class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-hourglass-split"></i> Pending Payment</span>
+                            <span class="badge badge-status-pending"><i class="bi bi-clock"></i> Pending Payment</span>
                         {% elif order.payment_status == 'failed' %}
-                            <span class="badge bg-danger px-2 py-1"><i class="bi bi-exclamation-triangle"></i> Payment Failed</span>
+                            <span class="badge badge-status-cancelled"><i class="bi bi-exclamation-triangle"></i> Payment Failed</span>
                         {% elif order.payment_status == 'not_required' %}
-                            <span class="badge bg-secondary px-2 py-1">Not Required</span>
+                            <span class="badge badge-order-takeaway">Not Required</span>
                         {% endif %}
                     </div>
                 </div>

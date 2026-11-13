@@ -66,11 +66,11 @@
                             </td>
                             <td>
                                 {% if order.order_type == 'dine_in' %}
-                                    <span class="badge bg-warning text-dark"><i class="bi bi-geo-alt-fill"></i> Table #{{ order.table.table_number }}</span>
+                                    <span class="badge badge-order-dinein"><i class="bi bi-geo-alt-fill"></i> Table #{{ order.table.table_number }}</span>
                                 {% elif order.order_type == 'delivery' %}
-                                    <span class="badge bg-info text-dark"><i class="bi bi-truck"></i> Delivery</span>
+                                    <span class="badge badge-order-delivery"><i class="bi bi-scooter"></i> Delivery</span>
                                 {% else %}
-                                    <span class="badge bg-secondary"><i class="bi bi-bag"></i> Takeaway</span>
+                                    <span class="badge badge-order-takeaway"><i class="bi bi-bag-fill"></i> Takeaway</span>
                                 {% endif %}
                             </td>
                             <td class="fw-bold text-primary">RM {{ order.total_amount|floatformat:2 }}</td>
