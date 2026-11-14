@@ -84,7 +84,7 @@ Seed five numbered demo customers and their orders and reservations. Dates are a
 ```bash
 python main/manage.py seed_customer_demo
 ```
-*(Safe to rerun to refresh dates. Use `python main/manage.py seed_customer_demo --clear` to rebuild the customer activity, or `--delete` to remove the demo activity and customer accounts.)*
+*(Safe to rerun to refresh dates. Use `python main/manage.py seed_customer_demo --clear` to rebuild activity for the five demo customers, or `--delete` to remove those customers and all of their orders and reservations.)*
 
 ### Step 8: Generate table QR codes
 Generate QR code PNG images for all active restaurant tables:
@@ -112,7 +112,7 @@ Run `seed_restaurant_demo` for restaurant data and the admin account. Run `seed_
 | **Demo Customer 2** | `customer2@demo.com` | `Customer1234!` | Pre-seeded with delivery orders & bookings |
 | **Demo Customer 3–5** | `customer3@demo.com` – `customer5@demo.com` | `Customer1234!` | Additional customers with order & reservation history |
 
-\* `seed_restaurant_demo` creates the dedicated demo account if it does not exist, with initial password `Admin1234!`. It does not use or change other superuser accounts. If `admin@gmail.com` already exists, its password is preserved. Change the initial password after setup.
+\* `seed_restaurant_demo` creates the dedicated demo account if it does not exist, with initial password `Admin1234!`. It has the app's admin role but is neither Django staff nor a superuser, so it can use the restaurant admin portal but not `/admin/`. It does not change other superuser accounts. If `admin@gmail.com` already exists, its password is preserved. Change the initial password after setup.
 
 ---
 

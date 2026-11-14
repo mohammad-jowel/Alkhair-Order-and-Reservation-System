@@ -22,21 +22,21 @@ class Command(BaseCommand):
                 'phone': '',
                 'address': 'Restoran Alkhair, Parit Raja, Batu Pahat, Johor',
                 'role': 'admin',
-                'is_staff': True,
-                'is_superuser': True,
+                'is_staff': False,
+                'is_superuser': False,
             }
         )
         if created:
             admin.set_password('Admin1234!')
             admin.save()
             self.stdout.write(self.style.SUCCESS(f'Created admin account: {admin.email}'))
-        # Ensure the dedicated demo account can use Django Admin without
-        # changing the password if the account already exists.
+        # This demo account uses the app's role-protected admin portal, not
+        # Django Admin, so it needs neither staff nor superuser privileges.
         changed_fields = []
         for field, value in (
             ('role', 'admin'),
-            ('is_staff', True),
-            ('is_superuser', True),
+            ('is_staff', False),
+            ('is_superuser', False),
             ('is_active', True),
         ):
             if getattr(admin, field) != value:
@@ -44,6 +44,10 @@ class Command(BaseCommand):
                 changed_fields.append(field)
         if changed_fields:
             admin.save(update_fields=changed_fields)
+
+        # Remove any elevated permissions left by an older version of this seed.
+        admin.groups.clear()
+        admin.user_permissions.clear()
 
         # 2. Seed Restaurant Tables (10 tables with random qr_token)
         for num in range(1, 11):

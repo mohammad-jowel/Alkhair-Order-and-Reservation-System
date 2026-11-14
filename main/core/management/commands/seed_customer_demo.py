@@ -4,15 +4,15 @@ Creates 5 demo customer accounts, then seeds realistic orders, order items,
 and reservations with dates relative to the current date.
 Re-running updates existing demo records to keep dates fresh.
 """
-import random
-import secrets
 from decimal import Decimal
 from datetime import timedelta, time
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+from django.core.management import call_command
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from accounts.models import Account
-from menu.models import MenuItem, MenuCategory
+from menu.models import MenuItem
 from orders.models import Order, OrderItem, RestaurantTable
 from reservations.models import Reservation
 
@@ -20,6 +20,9 @@ from reservations.models import Reservation
 # Tag to identify demo-seeded records
 DEMO_TAG = '__DEMO_SEED__'
 DEMO_PASSWORD = 'Customer1234!'
+EXPECTED_DEMO_ORDERS = 15
+EXPECTED_DEMO_ORDER_ITEMS = 30
+EXPECTED_DEMO_RESERVATIONS = 8
 
 # 5 demo customers with realistic Malaysian details
 DEMO_CUSTOMERS = [
@@ -54,6 +57,7 @@ DEMO_CUSTOMERS = [
         'address': 'No. 5, Jalan Demo, Parit Raja, 86400 Batu Pahat, Johor',
     },
 ]
+DEMO_EMAILS = tuple(customer['email'] for customer in DEMO_CUSTOMERS)
 
 
 class Command(BaseCommand):
@@ -63,15 +67,18 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser):
-        parser.add_argument(
+        seed_action = parser.add_mutually_exclusive_group()
+        seed_action.add_argument(
             '--clear',
             action='store_true',
-            help='Delete all demo-seeded data (orders, reservations) and re-seed.',
+            help='Delete activity for the five demo customers and re-seed it.',
         )
-        parser.add_argument(
+        seed_action.add_argument(
             '--delete',
             action='store_true',
-            help='Wipe ALL demo data (orders, reservations, and demo accounts) and exit.',
+            help=(
+                'Delete orders/reservations for the five demo customers and their accounts, then exit.'
+            ),
         )
 
     @transaction.atomic
@@ -80,71 +87,80 @@ class Command(BaseCommand):
         # to the restaurant's current calendar date.
         today = timezone.localdate()
 
-        # ── Full delete: wipe everything and exit ────────────────────────
+        # ── Delete seeded activity and safe-to-remove demo accounts ──────
         if options['delete']:
-            del_orders, _ = Order.objects.filter(
-                delivery_address__contains=DEMO_TAG
-            ).delete()
-            del_res, _ = Reservation.objects.filter(
-                note__contains=DEMO_TAG
-            ).delete()
-            demo_emails = [c['email'] for c in DEMO_CUSTOMERS]
-            del_accounts, _ = Account.objects.filter(email__in=demo_emails).delete()
+            # Match by marker and by dedicated demo account. The account match
+            # also cleans records from older seed versions if a marker was lost.
+            demo_orders = self._demo_orders(include_customer_activity=True)
+            demo_reservations = self._demo_reservations(include_customer_activity=True)
+            order_count = demo_orders.count()
+            reservation_count = demo_reservations.count()
+            account_count = Account.objects.filter(email__in=DEMO_EMAILS).count()
+            demo_orders.delete()
+            demo_reservations.delete()
+            Account.objects.filter(email__in=DEMO_EMAILS).delete()
             self.stdout.write(self.style.WARNING(
-                f'Deleted {del_orders} order records, {del_res} reservations, '
-                f'and {del_accounts} demo accounts.'
+                f'Deleted {order_count} demo orders, {reservation_count} demo reservations, '
+                f'and {account_count} demo customer accounts.'
             ))
-            self.stdout.write(self.style.SUCCESS('All demo data wiped.'))
+            self.stdout.write(self.style.SUCCESS('Demo customer cleanup complete.'))
             return
 
         # ── 1. Create demo customer accounts ─────────────────────────────
         customers = self._ensure_demo_customers()
 
-        # ── 2. Ensure menu items exist (call seed_restaurant_demo if empty) ─
+        # ── 2. Ensure the restaurant seed has supplied enough menu items and tables.
         items = list(MenuItem.objects.filter(is_available=True).order_by('item_id'))
-        if len(items) < 5:
+        tables = list(RestaurantTable.objects.filter(is_active=True).order_by('table_number')[:5])
+        if len(items) < 16 or len(tables) < 4:
             self.stdout.write(self.style.WARNING(
-                'Menu items not found. Running seed_restaurant_demo first...'
+                'Restaurant menu or tables are incomplete. Running seed_restaurant_demo...'
             ))
-            from django.core.management import call_command
             call_command('seed_restaurant_demo', stdout=self.stdout, stderr=self.stderr)
             items = list(MenuItem.objects.filter(is_available=True).order_by('item_id'))
-
-        # ── 3. Ensure tables exist ───────────────────────────────────────
-        tables = list(RestaurantTable.objects.filter(is_active=True).order_by('table_number')[:5])
-        if not tables:
-            for num in range(1, 6):
-                tbl, _ = RestaurantTable.objects.get_or_create(
-                    table_number=num,
-                    defaults={'qr_token': secrets.token_urlsafe(16), 'is_active': True}
-                )
-                tables.append(tbl)
-            self.stdout.write('  Created 5 restaurant tables.')
+            tables = list(RestaurantTable.objects.filter(is_active=True).order_by('table_number')[:5])
+        if len(items) < 16:
+            raise CommandError('At least 16 available menu items are required to seed demo orders.')
+        if len(tables) < 4:
+            raise CommandError('At least 4 active restaurant tables are required to seed demo orders.')
 
         # ── 4. Optional clear ────────────────────────────────────────────
         if options['clear']:
-            del_orders, _ = Order.objects.filter(
-                delivery_address__contains=DEMO_TAG
-            ).delete()
-            del_res, _ = Reservation.objects.filter(
-                note__contains=DEMO_TAG
-            ).delete()
+            demo_orders = self._demo_orders(include_customer_activity=True)
+            demo_reservations = self._demo_reservations(include_customer_activity=True)
+            order_count = demo_orders.count()
+            reservation_count = demo_reservations.count()
+            demo_orders.delete()
+            demo_reservations.delete()
             self.stdout.write(self.style.WARNING(
-                f'Cleared {del_orders} demo order records and {del_res} demo reservations.'
+                f'Cleared {order_count} demo orders and {reservation_count} demo reservations.'
             ))
 
         # ── 5. Create or update demo data ────────────────────────────────
-        existing_orders = Order.objects.filter(delivery_address__contains=DEMO_TAG)
+        existing_orders = self._demo_orders()
+        existing_reservations = self._demo_reservations()
+        orders_count = existing_orders.count()
+        order_items_count = OrderItem.objects.filter(
+            order__delivery_address__contains=DEMO_TAG
+        ).count()
+        reservations_count = existing_reservations.count()
 
-        if existing_orders.exists():
+        if (orders_count == EXPECTED_DEMO_ORDERS
+                and order_items_count == EXPECTED_DEMO_ORDER_ITEMS
+                and reservations_count == EXPECTED_DEMO_RESERVATIONS):
             self._update_dates(existing_orders, today)
             self._update_reservation_dates(today)
             self.stdout.write(self.style.SUCCESS(
-                f'\nUpdated {existing_orders.count()} demo orders and '
-                f'{Reservation.objects.filter(note__contains=DEMO_TAG).count()} demo reservations '
+                f'\nUpdated {orders_count} demo orders and {reservations_count} demo reservations '
                 f'to be relative to today ({today}).'
             ))
         else:
+            if orders_count or reservations_count:
+                self.stdout.write(self.style.WARNING(
+                    'Existing demo activity is incomplete; rebuilding it to avoid duplicates.'
+                ))
+                existing_orders.delete()
+                existing_reservations.delete()
             self._create_demo_data(customers, items, tables, today)
             self.stdout.write(self.style.SUCCESS(
                 '\nDemo test data seeded successfully!'
@@ -152,6 +168,18 @@ class Command(BaseCommand):
 
         # ── 6. Summary ──────────────────────────────────────────────────
         self._print_summary(today, customers)
+
+    def _demo_orders(self, include_customer_activity=False):
+        query = Q(delivery_address__contains=DEMO_TAG)
+        if include_customer_activity:
+            query |= Q(account__email__in=DEMO_EMAILS)
+        return Order.objects.filter(query)
+
+    def _demo_reservations(self, include_customer_activity=False):
+        query = Q(note__contains=DEMO_TAG)
+        if include_customer_activity:
+            query |= Q(account__email__in=DEMO_EMAILS)
+        return Reservation.objects.filter(query)
 
     # ═════════════════════════════════════════════════════════════════════
     #  CREATE / ENSURE DEMO CUSTOMERS
@@ -175,6 +203,21 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(
                     f'  Created demo customer: {info["email"]} ({info["full_name"]})'
                 ))
+            changed_fields = []
+            for field, value in (
+                ('full_name', info['full_name']),
+                ('role', 'customer'),
+                ('is_active', True),
+                ('is_staff', False),
+                ('is_superuser', False),
+            ):
+                if getattr(account, field) != value:
+                    setattr(account, field, value)
+                    changed_fields.append(field)
+            if changed_fields:
+                account.save(update_fields=changed_fields)
+            account.groups.clear()
+            account.user_permissions.clear()
             customers.append(account)
         return customers
 
@@ -215,12 +258,13 @@ class Command(BaseCommand):
 
         hours = [11, 12, 13, 14, 17, 18, 19, 20, 21, 12, 15, 19, 11, 13, 18]
 
+        demo_order_items = []
         for idx, spec in enumerate(order_specs):
             customer, days_ago, o_type, o_status, pay_method, pay_status, tbl_idx, items_spec = spec
 
             order_day = today - timedelta(days=days_ago)
             hour = hours[idx % len(hours)]
-            minute = random.randint(0, 59)
+            minute = (idx * 7) % 60
             order_dt = timezone.make_aware(
                 timezone.datetime(order_day.year, order_day.month, order_day.day, hour, minute, 0)
             )
@@ -256,14 +300,16 @@ class Command(BaseCommand):
             # Create order items
             for item_idx, qty in items_spec:
                 item = items[item_idx % len(items)]
-                OrderItem.objects.create(
+                demo_order_items.append(OrderItem(
                     order=order, item=item, quantity=qty, unit_price=item.price,
-                )
+                ))
 
             self.stdout.write(
                 f'  Order #{order.order_id}: {o_type} by {customer.full_name} '
                 f'({order_day}, RM {total:.2f}) [{o_status}/{pay_status}]'
             )
+
+        OrderItem.objects.bulk_create(demo_order_items)
 
         # ── Demo reservations (spread across all 5 customers) ────────────
         reservation_specs = [
@@ -278,9 +324,10 @@ class Command(BaseCommand):
             (c3,  4, time(12, 30), 4, 'pending',   f'Weekend brunch {DEMO_TAG}'),
         ]
 
+        demo_reservations = []
         for customer, days_offset, res_time, party, status, note in reservation_specs:
             res_date = today + timedelta(days=days_offset)
-            Reservation.objects.create(
+            reservation = Reservation.objects.create(
                 account=customer,
                 reservation_date=res_date,
                 reservation_time=res_time,
@@ -288,10 +335,18 @@ class Command(BaseCommand):
                 status=status,
                 note=note,
             )
+            created_day = min(today, res_date - timedelta(days=1))
+            reservation.created_at = timezone.make_aware(
+                timezone.datetime(
+                    created_day.year, created_day.month, created_day.day, 10, 0, 0
+                )
+            )
+            demo_reservations.append(reservation)
             self.stdout.write(
                 f'  Reservation: {customer.full_name} on {res_date} at {res_time} '
                 f'(party of {party}) [{status}]'
             )
+        Reservation.objects.bulk_update(demo_reservations, ['created_at'])
 
     # ═════════════════════════════════════════════════════════════════════
     #  UPDATE EXISTING DEMO DATA DATES
@@ -311,11 +366,12 @@ class Command(BaseCommand):
             self.stdout.write('  Orders are already up to date (no shift needed).')
             return
 
-        for order in existing_orders:
-            new_date = order.order_date + shift
-            Order.objects.filter(order_id=order.order_id).update(order_date=new_date)
+        orders = list(existing_orders)
+        for order in orders:
+            order.order_date += shift
+        Order.objects.bulk_update(orders, ['order_date'])
 
-        self.stdout.write(f'  Shifted {existing_orders.count()} demo orders by {shift.days} day(s).')
+        self.stdout.write(f'  Shifted {len(orders)} demo orders by {shift.days} day(s).')
 
     def _update_reservation_dates(self, today):
         """Shift all demo reservation dates to remain relative to today."""
@@ -337,14 +393,13 @@ class Command(BaseCommand):
             self.stdout.write('  Reservations are already up to date (no shift needed).')
             return
 
-        for res in demo_res:
-            new_date = res.reservation_date + shift
-            Reservation.objects.filter(reservation_id=res.reservation_id).update(
-                reservation_date=new_date,
-                created_at=res.created_at + shift,
-            )
+        reservations = list(demo_res)
+        for res in reservations:
+            res.reservation_date += shift
+            res.created_at += shift
+        Reservation.objects.bulk_update(reservations, ['reservation_date', 'created_at'])
 
-        self.stdout.write(f'  Shifted {demo_res.count()} demo reservations by {shift.days} day(s).')
+        self.stdout.write(f'  Shifted {len(reservations)} demo reservations by {shift.days} day(s).')
 
     # ═════════════════════════════════════════════════════════════════════
     #  SUMMARY OUTPUT

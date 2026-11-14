@@ -46,7 +46,7 @@ prototype/
   - `about(request)`: Renders the About & Contact page with restaurant address in Parit Raja, phone numbers, and hours.
   - `custom_404(request, exception)` / `custom_403(request, exception)`: Custom error views returning HTTP 404/403.
 - `management/commands/seed_restaurant_demo.py`: Populates categories, 26 menu items, 10 restaurant tables with QR tokens, and the admin account.
-- `management/commands/seed_customer_demo.py`: Creates 5 numbered demo customers (`customer1@demo.com` – `customer5@demo.com`) and seeds 15 realistic orders across the week plus 8 reservations. Order and reservation dates refresh relative to the current local date when rerun. Supports `--clear` to rebuild activity and `--delete` to remove demo activity and customer accounts.
+- `management/commands/seed_customer_demo.py`: Creates 5 numbered demo customers (`customer1@demo.com` – `customer5@demo.com`) and seeds 15 realistic orders across the week plus 8 reservations. Order and reservation dates refresh relative to the current local date when rerun. Supports `--clear` to rebuild activity for the five demo customers and `--delete` to remove those accounts plus all their orders and reservations.
 
 ### App 2: `accounts`
 - **Purpose**: User registration, authentication, profile editing, and role-based access control.
