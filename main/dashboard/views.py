@@ -1,7 +1,7 @@
 import csv
 import json
 from decimal import Decimal
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.utils import timezone
@@ -10,6 +10,24 @@ from accounts.decorators import admin_required
 from accounts.models import Account
 from orders.models import Order, OrderItem
 from reservations.models import Reservation
+
+
+def _filter_orders_by_dates(queryset, start_date=None, end_date=None):
+    """Filter aware order timestamps using local day boundaries.
+
+    Half-open datetime ranges avoid backend-specific DATE(CONVERT_TZ(...))
+    behavior, which can fail on MySQL installations without timezone tables.
+    """
+    current_tz = timezone.get_current_timezone()
+    if start_date:
+        start_at = timezone.make_aware(datetime.combine(start_date, time.min), current_tz)
+        queryset = queryset.filter(order_date__gte=start_at)
+    if end_date:
+        end_at = timezone.make_aware(
+            datetime.combine(end_date + timedelta(days=1), time.min), current_tz
+        )
+        queryset = queryset.filter(order_date__lt=end_at)
+    return queryset
 
 
 def _parse_date_range(request, today):
@@ -72,22 +90,18 @@ def dashboard(request):
 
     # 1. Base Summary Metrics
     # Sales Total Rule: sum of total_amount for orders with payment_status = 'paid' and order_status != 'cancelled'
-    today_sales = Order.objects.filter(
-        order_date__date=today,
+    today_orders = _filter_orders_by_dates(Order.objects.all(), today, today)
+    today_sales = today_orders.filter(
         payment_status='paid'
     ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
 
-    today_orders_count = Order.objects.filter(order_date__date=today).count()
+    today_orders_count = today_orders.count()
     pending_orders_count = Order.objects.filter(order_status='pending').count()
     total_customers_count = Account.objects.filter(role='customer').count()
     pending_reservations_count = Reservation.objects.filter(status='pending').count()
 
     # Filtered Orders QuerySet
-    filtered_orders = Order.objects.all()
-    if start_date:
-        filtered_orders = filtered_orders.filter(order_date__date__gte=start_date)
-    if end_date:
-        filtered_orders = filtered_orders.filter(order_date__date__lte=end_date)
+    filtered_orders = _filter_orders_by_dates(Order.objects.all(), start_date, end_date)
 
     period_sales = filtered_orders.filter(
         payment_status='paid'
@@ -104,8 +118,7 @@ def dashboard(request):
         channel_title = "Orders by Channel (Selected Period)"
         orders_table_title = "Orders in Selected Period"
     else:
-        today_orders = Order.objects.filter(order_date__date=today)
-        dashboard_orders = today_orders if today_orders.exists() else Order.objects.all()
+        dashboard_orders = today_orders
         dashboard_sales = today_sales
         dashboard_orders_count = today_orders_count
         card_sales_title = "Today's Sales"
@@ -120,8 +133,9 @@ def dashboard(request):
     if is_filtered and start_date and end_date and (end_date - start_date).days <= 31:
         curr = start_date
         while curr <= end_date:
-            day_sales = Order.objects.filter(
-                order_date__date=curr,
+            day_sales = _filter_orders_by_dates(
+                Order.objects.all(), curr, curr
+            ).filter(
                 payment_status='paid'
             ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
             labels_chart.append(curr.strftime('%d %b'))
@@ -131,8 +145,9 @@ def dashboard(request):
     else:
         for i in range(6, -1, -1):
             day = today - timedelta(days=i)
-            day_sales = Order.objects.filter(
-                order_date__date=day,
+            day_sales = _filter_orders_by_dates(
+                Order.objects.all(), day, day
+            ).filter(
                 payment_status='paid'
             ).exclude(order_status='cancelled').aggregate(total=Sum('total_amount'))['total'] or Decimal('0.00')
             labels_chart.append(day.strftime('%d %b'))
@@ -217,12 +232,11 @@ def download_report(request):
     today = timezone.localdate()
     start_date, end_date, preset, _ = _parse_date_range(request, today)
 
-    orders = Order.objects.select_related('account', 'table').prefetch_related('items__item').order_by('-order_date')
-
-    if start_date:
-        orders = orders.filter(order_date__date__gte=start_date)
-    if end_date:
-        orders = orders.filter(order_date__date__lte=end_date)
+    orders = _filter_orders_by_dates(
+        Order.objects.select_related('account', 'table').prefetch_related('items__item').order_by('-order_date'),
+        start_date,
+        end_date,
+    )
 
     if preset == 'this_week':
         filename_part = f"_this_week_{start_date}_to_{end_date}"
