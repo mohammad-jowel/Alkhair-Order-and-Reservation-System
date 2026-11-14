@@ -57,10 +57,10 @@ SITE_BASE_URL=http://127.0.0.1:8000
 # Database Settings
 DB_ENGINE=mysql
 DB_NAME=project_alkhair
-DB_USER=root
-DB_PASSWORD=1234
+DB_USER=[db_user]
+DB_PASSWORD=[db_password]
 DB_HOST=127.0.0.1
-DB_PORT=3307
+DB_PORT=[db_port]
 ```
 
 ### Step 5: Start MySQL
