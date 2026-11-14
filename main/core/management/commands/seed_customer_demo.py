@@ -1,5 +1,5 @@
 """
-Management command: seed_demo_data
+Management command: seed_customer_demo
 Creates 5 demo customer accounts, then seeds realistic orders, order items,
 and reservations with dates relative to the current date.
 Re-running updates existing demo records to keep dates fresh.
@@ -76,7 +76,8 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        now = timezone.now()
+        # Use Django's configured local timezone so each run anchors records
+        # to the restaurant's current calendar date.
         today = timezone.localdate()
 
         # ── Full delete: wipe everything and exit ────────────────────────
@@ -99,14 +100,14 @@ class Command(BaseCommand):
         # ── 1. Create demo customer accounts ─────────────────────────────
         customers = self._ensure_demo_customers()
 
-        # ── 2. Ensure menu items exist (call seed_demo if empty) ─────────
+        # ── 2. Ensure menu items exist (call seed_restaurant_demo if empty) ─
         items = list(MenuItem.objects.filter(is_available=True).order_by('item_id'))
         if len(items) < 5:
             self.stdout.write(self.style.WARNING(
-                'Menu items not found. Running seed_demo first...'
+                'Menu items not found. Running seed_restaurant_demo first...'
             ))
             from django.core.management import call_command
-            call_command('seed_demo', stdout=self.stdout, stderr=self.stderr)
+            call_command('seed_restaurant_demo', stdout=self.stdout, stderr=self.stderr)
             items = list(MenuItem.objects.filter(is_available=True).order_by('item_id'))
 
         # ── 3. Ensure tables exist ───────────────────────────────────────
@@ -136,7 +137,7 @@ class Command(BaseCommand):
         existing_orders = Order.objects.filter(delivery_address__contains=DEMO_TAG)
 
         if existing_orders.exists():
-            self._update_dates(existing_orders, today, now)
+            self._update_dates(existing_orders, today)
             self._update_reservation_dates(today)
             self.stdout.write(self.style.SUCCESS(
                 f'\nUpdated {existing_orders.count()} demo orders and '
@@ -269,7 +270,7 @@ class Command(BaseCommand):
             # (customer, days_offset, time, party_size, status, note)
             (c1, -3, time(19, 0),  4, 'confirmed', f'Family dinner {DEMO_TAG}'),
             (c3, -2, time(20, 30), 2, 'confirmed', f'Friends meetup {DEMO_TAG}'),
-            (c2, -1, time(12, 0),  6, 'completed', f'Birthday lunch {DEMO_TAG}'),
+            (c2, -1, time(12, 0),  6, 'cancelled', f'Birthday lunch {DEMO_TAG}'),
             (c4,  0, time(19, 30), 3, 'pending',   f'Business meeting {DEMO_TAG}'),
             (c5,  1, time(18, 0),  5, 'pending',   f'Group gathering {DEMO_TAG}'),
             (c1,  2, time(13, 0),  8, 'pending',   f'Team celebration {DEMO_TAG}'),
@@ -295,7 +296,7 @@ class Command(BaseCommand):
     # ═════════════════════════════════════════════════════════════════════
     #  UPDATE EXISTING DEMO DATA DATES
     # ═════════════════════════════════════════════════════════════════════
-    def _update_dates(self, existing_orders, today, now):
+    def _update_dates(self, existing_orders, today):
         """Shift all demo order dates so they remain relative to today."""
         self.stdout.write(self.style.NOTICE('Updating demo order dates...'))
 
@@ -339,7 +340,8 @@ class Command(BaseCommand):
         for res in demo_res:
             new_date = res.reservation_date + shift
             Reservation.objects.filter(reservation_id=res.reservation_id).update(
-                reservation_date=new_date
+                reservation_date=new_date,
+                created_at=res.created_at + shift,
             )
 
         self.stdout.write(f'  Shifted {demo_res.count()} demo reservations by {shift.days} day(s).')

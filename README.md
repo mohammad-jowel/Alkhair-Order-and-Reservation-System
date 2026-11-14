@@ -75,16 +75,16 @@ python main/manage.py migrate
 ```
 
 ### Step 7: Seed demo data
-Populate initial categories, 26 menu items, 10 restaurant tables with QR tokens, 1 admin account, and 2 customer accounts:
+Seed the restaurant setup: categories, 26 menu items, 10 restaurant tables with QR tokens, and the demo admin account:
 ```bash
-python main/manage.py seed_demo
+python main/manage.py seed_restaurant_demo
 ```
 
-To also populate realistic demo orders across the past week and reservations relative to today with 5 dedicated demo customer accounts:
+Seed five numbered demo customers and their orders and reservations. Dates are anchored to the current local date whenever the command runs:
 ```bash
-python main/manage.py seed_demo_data
+python main/manage.py seed_customer_demo
 ```
-*(Supports `python main/manage.py seed_demo_data --clear` to re-seed, or `--delete` to wipe all demo records.)*
+*(Safe to rerun to refresh dates. Use `python main/manage.py seed_customer_demo --clear` to rebuild the customer activity, or `--delete` to remove the demo activity and customer accounts.)*
 
 ### Step 8: Generate table QR codes
 Generate QR code PNG images for all active restaurant tables:
@@ -103,16 +103,16 @@ Visit `http://127.0.0.1:8000/` in your web browser.
 
 ## 3. Demonstration Accounts & Logins
 
-After running `seed_demo` or `seed_demo_data`, use these credentials to explore:
+Run `seed_restaurant_demo` for restaurant data and the admin account. Run `seed_customer_demo` for the five demo customer accounts and their activity:
 
 | Role | Email | Password | Purpose |
 |---|---|---|---|
-| **Admin** | `admin@alkhair.com` | `Admin1234!` | Dashboard, menu CRUD, manage orders, confirm reservations, table QR management |
+| **Admin** | `admin@alkhair.com` | `Admin1234!`* | Dashboard, menu CRUD, manage orders, confirm reservations, table QR management |
 | **Demo Customer 1** | `customer1@demo.com` | `Customer1234!` | Ordering, QR dine-in, reservations, profile editing |
 | **Demo Customer 2** | `customer2@demo.com` | `Customer1234!` | Pre-seeded with delivery orders & bookings |
 | **Demo Customer 3–5** | `customer3@demo.com` – `customer5@demo.com` | `Customer1234!` | Additional customers with order & reservation history |
-| **Initial Customer 1** | `customer1@gmail.com` | `Customer1234!` | Primary customer created by `seed_demo` |
-| **Initial Customer 2** | `customer2@gmail.com` | `Customer1234!` | Secondary customer created by `seed_demo` |
+
+\* If an existing superuser is present, `seed_restaurant_demo` reuses it and preserves its password; use that account's email. Otherwise it creates `admin@alkhair.com` with initial password `Admin1234!`. Change the initial password after setup.
 
 ---
 
@@ -184,7 +184,8 @@ DB_ENGINE=sqlite
 ### Step 4: Run migrations, seed demo, and collect static files
 ```bash
 python main/manage.py migrate
-python main/manage.py seed_demo
+python main/manage.py seed_restaurant_demo
+python main/manage.py seed_customer_demo
 python main/manage.py generate_table_qr
 python main/manage.py collectstatic --noinput
 ```

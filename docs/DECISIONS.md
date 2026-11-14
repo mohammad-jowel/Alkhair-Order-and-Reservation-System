@@ -33,7 +33,7 @@ This document records technical decisions, assumptions, and design rationale for
 ## 4. Unreadable Menu Items (TODO)
 
 - The Alkhair menu photograph displayed two plate dishes priced at RM15 and RM12 where the item names were obscured.
-- **TODO**: Group members must verify the exact dish names with Restoran Alkhair staff and update `seed_demo` or add them via the Admin Manage Menu interface.
+- **TODO**: Group members must verify the exact dish names with Restoran Alkhair staff and update `seed_restaurant_demo` or add them via the Admin Manage Menu interface.
 - "Extra cheese" (RM1 on shawarma) is noted as an add-on in the menu, but was excluded from the initial schema to keep the relational model minimal and strictly adhere to project guidelines.
 
 ---

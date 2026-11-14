@@ -12,7 +12,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         tables = RestaurantTable.objects.filter(is_active=True).order_by('table_number')
         if not tables.exists():
-            self.stdout.write(self.style.WARNING('No active restaurant tables found. Run seed_demo first.'))
+            self.stdout.write(self.style.WARNING('No active restaurant tables found. Run seed_restaurant_demo first.'))
             return
 
         # Prepare target output directory: MEDIA_ROOT / qr

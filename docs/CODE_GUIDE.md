@@ -27,7 +27,7 @@ prototype/
     │   └── asgi.py           # ASGI entry point
     ├── static/               # CSS, JS, and SVG placeholder images
     ├── templates/            # HTML templates (base.html and error pages)
-    ├── core/                 # Home, About & Contact, seed_demo command
+    ├── core/                 # Home, About & Contact, demo seed commands
     ├── accounts/             # User auth, registration, profiles, RBAC
     ├── menu/                 # Menu categories, items, and admin CRUD
     ├── orders/               # Cart, checkout, QR dine-in, order management
@@ -45,8 +45,8 @@ prototype/
   - `home(request)`: Renders the home landing page with restaurant intro, operating hours, and the accessible flame animation multimedia element.
   - `about(request)`: Renders the About & Contact page with restaurant address in Parit Raja, phone numbers, and hours.
   - `custom_404(request, exception)` / `custom_403(request, exception)`: Custom error views returning HTTP 404/403.
-- `management/commands/seed_demo.py`: Populates database with categories, 26 menu items, 10 restaurant tables with QR tokens, 1 admin account, and 2 customer accounts.
-- `management/commands/seed_demo_data.py`: Creates 5 demo customers (`customer1@demo.com` – `customer5@demo.com`) and seeds 15 realistic orders across the week with dates relative to today, plus 8 reservations. Supports `--clear` to re-seed fresh and `--delete` to wipe all demo records.
+- `management/commands/seed_restaurant_demo.py`: Populates categories, 26 menu items, 10 restaurant tables with QR tokens, and the admin account.
+- `management/commands/seed_customer_demo.py`: Creates 5 numbered demo customers (`customer1@demo.com` – `customer5@demo.com`) and seeds 15 realistic orders across the week plus 8 reservations. Order and reservation dates refresh relative to the current local date when rerun. Supports `--clear` to rebuild activity and `--delete` to remove demo activity and customer accounts.
 
 ### App 2: `accounts`
 - **Purpose**: User registration, authentication, profile editing, and role-based access control.

@@ -8,56 +8,52 @@ from orders.models import RestaurantTable
 
 
 class Command(BaseCommand):
-    help = 'Seeds initial demonstration data: categories, menu items, 10 restaurant tables, 1 admin and 2 customers.'
+    help = 'Seeds restaurant data (categories, menu items, and tables) plus the demo admin account.'
 
     @transaction.atomic
     def handle(self, *args, **options):
         self.stdout.write(self.style.NOTICE('Seeding demo data...'))
 
         # 1. Seed Accounts
-        admin, created = Account.objects.get_or_create(
-            email='admin@alkhair.com',
-            defaults={
-                'full_name': 'Alkhair Administrator',
-                'phone': '+60123456789',
-                'address': 'Restoran Alkhair, Parit Raja, Batu Pahat, Johor',
-                'role': 'admin',
-                'is_staff': True,
-                'is_superuser': True,
-            }
-        )
+        admin = Account.objects.filter(email='admin@alkhair.com').first()
+        created = False
+        if admin is None:
+            # Reuse a superuser already created during deployment instead of
+            # adding a second admin account just for demo seeding.
+            admin = Account.objects.filter(is_superuser=True).order_by('account_id').first()
+        if admin is None:
+            admin, created = Account.objects.get_or_create(
+                email='admin@alkhair.com',
+                defaults={
+                    'full_name': 'Alkhair Administrator',
+                    'phone': '',
+                    'address': 'Restoran Alkhair, Parit Raja, Batu Pahat, Johor',
+                    'role': 'admin',
+                    'is_staff': True,
+                    'is_superuser': True,
+                }
+            )
         if created:
             admin.set_password('Admin1234!')
             admin.save()
-            self.stdout.write(self.style.SUCCESS('Created admin account: admin@alkhair.com'))
+            self.stdout.write(self.style.SUCCESS(f'Created admin account: {admin.email}'))
+        elif admin.email != 'admin@alkhair.com':
+            self.stdout.write(f'Reusing existing superuser account: {admin.email}')
 
-        cust1, created = Account.objects.get_or_create(
-            email='customer1@gmail.com',
-            defaults={
-                'full_name': 'Ahmad bin Ali',
-                'phone': '+60198765432',
-                'address': 'No. 12, Jalan Universiti, Parit Raja, 86400 Batu Pahat, Johor',
-                'role': 'customer',
-            }
-        )
-        if created:
-            cust1.set_password('Customer1234!')
-            cust1.save()
-            self.stdout.write(self.style.SUCCESS('Created customer 1: customer1@gmail.com'))
-
-        cust2, created = Account.objects.get_or_create(
-            email='customer2@gmail.com',
-            defaults={
-                'full_name': 'Siti Nurhaliza',
-                'phone': '+60112345678',
-                'address': 'No. 45, Taman Melewar, Parit Raja, 86400 Batu Pahat, Johor',
-                'role': 'customer',
-            }
-        )
-        if created:
-            cust2.set_password('Customer1234!')
-            cust2.save()
-            self.stdout.write(self.style.SUCCESS('Created customer 2: customer2@gmail.com'))
+        # The seeded admin may already exist, for example if it was created
+        # with createsuperuser. Ensure its permissions without changing its password.
+        changed_fields = []
+        for field, value in (
+            ('role', 'admin'),
+            ('is_staff', True),
+            ('is_superuser', True),
+            ('is_active', True),
+        ):
+            if getattr(admin, field) != value:
+                setattr(admin, field, value)
+                changed_fields.append(field)
+        if changed_fields:
+            admin.save(update_fields=changed_fields)
 
         # 2. Seed Restaurant Tables (10 tables with random qr_token)
         for num in range(1, 11):
@@ -133,7 +129,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('\nDemo data seeding complete!'))
         self.stdout.write('=' * 60)
         self.stdout.write(self.style.SUCCESS('DEMO LOGINS:'))
-        self.stdout.write('  Admin:      admin@alkhair.com    | Admin1234!')
-        self.stdout.write('  Customer 1: customer1@gmail.com | Customer1234!')
-        self.stdout.write('  Customer 2: customer2@gmail.com | Customer1234!')
+        self.stdout.write(f'  Admin:      {admin.email}')
+        if created:
+            self.stdout.write('  Initial password: Admin1234! (change it after setup)')
         self.stdout.write('=' * 60)
