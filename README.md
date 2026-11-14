@@ -107,12 +107,12 @@ Run `seed_restaurant_demo` for restaurant data and the admin account. Run `seed_
 
 | Role | Email | Password | Purpose |
 |---|---|---|---|
-| **Admin** | `admin@alkhair.com` | `Admin1234!`* | Dashboard, menu CRUD, manage orders, confirm reservations, table QR management |
+| **Demo Admin** | `admin@gmail.com` | `Admin1234!`* | Dashboard, menu CRUD, manage orders, confirm reservations, table QR management |
 | **Demo Customer 1** | `customer1@demo.com` | `Customer1234!` | Ordering, QR dine-in, reservations, profile editing |
 | **Demo Customer 2** | `customer2@demo.com` | `Customer1234!` | Pre-seeded with delivery orders & bookings |
 | **Demo Customer 3–5** | `customer3@demo.com` – `customer5@demo.com` | `Customer1234!` | Additional customers with order & reservation history |
 
-\* If an existing superuser is present, `seed_restaurant_demo` reuses it and preserves its password; use that account's email. Otherwise it creates `admin@alkhair.com` with initial password `Admin1234!`. Change the initial password after setup.
+\* `seed_restaurant_demo` creates the dedicated demo account if it does not exist, with initial password `Admin1234!`. It does not use or change other superuser accounts. If `admin@gmail.com` already exists, its password is preserved. Change the initial password after setup.
 
 ---
 

@@ -15,33 +15,23 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE('Seeding demo data...'))
 
         # 1. Seed Accounts
-        admin = Account.objects.filter(email='admin@alkhair.com').first()
-        created = False
-        if admin is None:
-            # Reuse a superuser already created during deployment instead of
-            # adding a second admin account just for demo seeding.
-            admin = Account.objects.filter(is_superuser=True).order_by('account_id').first()
-        if admin is None:
-            admin, created = Account.objects.get_or_create(
-                email='admin@alkhair.com',
-                defaults={
-                    'full_name': 'Alkhair Administrator',
-                    'phone': '',
-                    'address': 'Restoran Alkhair, Parit Raja, Batu Pahat, Johor',
-                    'role': 'admin',
-                    'is_staff': True,
-                    'is_superuser': True,
-                }
-            )
+        admin, created = Account.objects.get_or_create(
+            email='admin@gmail.com',
+            defaults={
+                'full_name': 'Demo Admin',
+                'phone': '',
+                'address': 'Restoran Alkhair, Parit Raja, Batu Pahat, Johor',
+                'role': 'admin',
+                'is_staff': True,
+                'is_superuser': True,
+            }
+        )
         if created:
             admin.set_password('Admin1234!')
             admin.save()
             self.stdout.write(self.style.SUCCESS(f'Created admin account: {admin.email}'))
-        elif admin.email != 'admin@alkhair.com':
-            self.stdout.write(f'Reusing existing superuser account: {admin.email}')
-
-        # The seeded admin may already exist, for example if it was created
-        # with createsuperuser. Ensure its permissions without changing its password.
+        # Ensure the dedicated demo account can use Django Admin without
+        # changing the password if the account already exists.
         changed_fields = []
         for field, value in (
             ('role', 'admin'),

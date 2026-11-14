@@ -8,7 +8,7 @@ This checklist details manual test procedures for each of the 13 pages and end-t
 
 | Account | Email | Password | Role |
 |---|---|---|---|
-| Admin | `admin@alkhair.com` | `Admin1234!` | Administrator |
+| Demo Admin | `admin@gmail.com` | `Admin1234!` | Administrator |
 | Customer 1 | `customer1@gmail.com` | `Customer1234!` | Registered Customer |
 | Customer 2 | `customer2@gmail.com` | `Customer1234!` | Registered Customer |
 
@@ -100,7 +100,7 @@ This checklist details manual test procedures for each of the 13 pages and end-t
 - **Expected Result**: Password updated; user session remains securely active.
 
 ### Page 11: Admin Dashboard (`/dashboard/`)
-- **Step 1**: Log in as `admin@alkhair.com`. Click "Dashboard".
+- **Step 1**: Log in as `admin@gmail.com`. Click "Dashboard".
 - **Expected Result**:
   - Summary cards show Today's Sales (with "This month's sales"), Total Orders, Pending Orders, Total Customers.
   - Date Range Filter bar appears at the top ("From Date", "To Date", "Filter", "Reset", and "Download Report (CSV)" button).
