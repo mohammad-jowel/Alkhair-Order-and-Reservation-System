@@ -153,11 +153,11 @@ Dashboard figures
 
 The payment simulation is a step inside Cart and Checkout, not an extra page. Keep the total at 13 pages.
 
-Navigation: one consistent navigation bar from `base.html`. It shows different links for visitors, customers and admins, and includes the table number badge when a table context is active. It collapses to a toggle menu on small screens.
+Navigation: one consistent navigation system from `base.html`. It shows links appropriate to visitors, customers and admins, includes the table number badge when a table context is active, and collapses to a toggle menu on small screens. For logged-in administrators, use a focused admin sidebar ordered as Dashboard, Manage Menu, Manage Orders, Manage Reservations, and Table QR Codes; hide the public Home, Menu & Order, and About & Contact links in this admin navigation.
 
 ## 6. Frontend requirements
 
-- Structure and styling: Use one shared base.html and one static/css/style.css. Load Bootstrap 5 through its CDN in base.html. Use Bootstrap for responsive layouts and common UI components such as navigation bars, forms, buttons, cards and tables. Use custom CSS in style.css to customize colours, typography, spacing and other design elements. Do not rely entirely on Bootstrap's default appearance. Maintain a consistent design across every page.
+- Structure and styling: Use one shared base.html and one static/css/style.css. Load Bootstrap 5 through its CDN in base.html. Use Bootstrap for responsive layouts and common UI components such as navigation bars, forms, buttons, cards and tables. Use custom CSS in style.css to customize colours, typography, spacing and other UI elements. Apply a warm restaurant palette (charcoal neutrals and food-ordering orange, currently `#f97316`), readable typography, and consistent order-status badges. Do not rely entirely on Bootstrap's default appearance. Maintain a consistent design across every page.
 
 - Visual style: Keep the website clean, simple and minimal. Avoid decorative gradients, excessive animations or heavy visual effects.
 
@@ -167,7 +167,7 @@ Navigation: one consistent navigation bar from `base.html`. It shows different l
 
 - Images and multimedia: Include at least five relevant images on the website. Use placeholder images in static/img/ with clear file names and instruct the group to replace them with their own restaurant and menu photos. Do not download or embed copyrighted images. Include the required accessible multimedia element.
 
-- JavaScript: Keep JavaScript small and simple. Use it for the mobile navigation toggle, client-side form checks (server-side validation remains mandatory), cart quantity buttons, delete confirmation prompts and the dashboard chart. Bootstrap's JavaScript bundle may be loaded through its CDN when required. Essential website actions must still work without JavaScript.
+- JavaScript: Keep JavaScript small and simple. Use it for the mobile navigation toggle, client-side form checks (server-side validation remains mandatory), cart quantity buttons, a shared confirmation modal, and the dashboard chart. Use Bootstrap's JavaScript bundle through its CDN when required. Destructive or consequential actions should use a shared themed in-app confirmation modal triggered by `data-confirm`, rather than native browser confirmation dialogs. Essential website actions must still work without JavaScript.
 
 - User feedback: Use Django messages to display success and error feedback to users.
 
@@ -176,13 +176,13 @@ Navigation: one consistent navigation bar from `base.html`. It shows different l
 Calculate everything from the database using the ORM (`aggregate`, `annotate`, `select_related`). Show:
 
 - Summary cards: today's sales, total orders, pending orders, total customers
-- Sales per day for the last 7 days (Chart.js bar or line chart)
+- Sales trend for the selected period (Chart.js bar or line chart; default to the last 7 days)
 - Best-selling menu items (top 5 by quantity, using `order_item` joined to `menu_item`)
 - Orders by type (delivery, takeaway, dine-in)
 - Recent orders (last 10)
 - Pending reservations count
 
-Include at least two queries that join three tables, and add a short comment above each query saying what it does. This supports the "database integration" marks.
+Include at least two queries that join three tables, and add a short comment above each query saying what it does. This supports the "database integration" marks. By default, align headline sales and order cards to today's activity. Add date range filtering (Today, This Week, This Month presets and custom start/end dates) that updates dashboard metrics, the chart, order-type breakdown, best sellers, and recent orders together. Provide a CSV report download for the selected period, encoded with a UTF-8 BOM for spreadsheet compatibility and containing a period summary and itemized order, customer, payment, and fulfillment details.
 
 ## 8. Security requirements
 
@@ -205,7 +205,7 @@ Work through these in order. Commit after each.
 Settings from environment, local `.env` with the MySQL values above, `.env.example` with placeholders, `requirements.txt`, `.gitignore`, MySQL connection (SQLite fallback only for hosting when `DB_ENGINE=sqlite`), `README.md` with localhost setup steps. Run `python manage.py migrate` against `project_alkhair` to confirm the connection works before building models.
 
 **Phase 2: Models**
-All apps, all seven models exactly as in section 3, migrations, Django admin registration (for superuser use), and a management command `seed_demo` that loads: categories, menu items (see section 10), 10 restaurant tables with random `qr_token` values, one admin account and two customer accounts. Print the demo logins when it finishes. Export the schema to `docs/schema.sql`.
+All apps, all seven models exactly as in section 3, migrations, and Django admin registration (for superuser use). Provide separate demo seed commands: `seed_restaurant_demo` loads menu categories/items, 10 restaurant tables with random `qr_token` values, and a dedicated application admin account; `seed_customer_demo` loads five numbered demo customers with sample orders and reservations whose dates refresh relative to the current local date. Print demo logins when the restaurant seed command finishes. Do not alter unrelated superuser accounts. Export the schema to `docs/schema.sql`.
 
 **Phase 3: Base and core pages**
 `base.html`, CSS, Home, About and Contact, custom error pages. Placeholder images.
@@ -214,7 +214,7 @@ All apps, all seven models exactly as in section 3, migrations, Django admin reg
 Register, login, logout, profile edit, change password, `admin_required` decorator.
 
 **Phase 5: Menu**
-Public menu page and the Manage Menu CRUD.
+Public menu page and the Manage Menu CRUD. Include category filtering in the admin item list (`?category=<id>`) and clickable category item counts that open the corresponding filtered list.
 
 **Phase 6: Cart, checkout and orders (delivery and takeaway)**
 Session cart, checkout, server-side totals, My Orders, Manage Orders, cash payment flow. Order type `dine_in` is not enabled yet.
@@ -229,18 +229,19 @@ Customer booking and list, cancel, Manage Reservations.
 - With a table in the session, checkout offers `dine_in` and saves `table_id`. The customer must be logged in before checkout. After login they return to the cart.
 - Management command `generate_table_qr` writes one PNG per table to `media/qr/` containing `SITE_BASE_URL/t/<qr_token>/`. Document in the README how to use the laptop's local network address for the demo (run on `0.0.0.0:8000`, add the address to `ALLOWED_HOSTS`, set `SITE_BASE_URL`) so a phone can scan the code.
 - Show a table badge in the navigation bar, with a link to clear it.
+- Add an admin Table QR Codes page at `/orders/tables/` to list tables, create a table with a unique token, toggle active status, regenerate tokens, download QR PNGs, test the table link, and print branded table tent cards. QR previews may be generated in memory for the page; retain the management command for writing PNG files to `media/qr/`.
 
 **Phase 9: Payment simulation**
 As described in section 4. Clear "demonstration only" banner.
 
 **Phase 10: Dashboard**
-As described in section 7.
+As described in section 7, including default today-first metrics, quick and custom date filters, and CSV report download.
 
 **Phase 11: Hardening and tests**
 Write tests with Django's test framework covering at least: registration and login, admin pages blocked for customers, a customer cannot open another customer's order or reservation, order total calculated on the server, unit price copied at checkout, delivery needs an address, dine-in needs a valid table, invalid QR token, reservation date and time validation, deleting an ordered menu item is blocked, payment status changes. All tests must pass. Review section 8 line by line.
 
 **Phase 12: Polish and deployment preparation**
-Responsive and accessibility pass at three widths. Check navigation and link consistency across all 13 pages. Prepare for PythonAnywhere: `STATIC_ROOT`, `collectstatic`, media handling, production environment variables, `ALLOWED_HOSTS`, `DEBUG = False`. Write the PythonAnywhere steps in the README, including the SQLite fallback if MySQL is not available on the account.
+Responsive and accessibility pass at three widths. Check navigation and link consistency across all 13 core pages and the additional admin table management page. Apply the custom warm restaurant visual theme consistently. Prepare for PythonAnywhere: `STATIC_ROOT`, `collectstatic`, media handling, production environment variables, `ALLOWED_HOSTS`, `DEBUG = False`. Write the PythonAnywhere steps in the README, including the SQLite fallback if MySQL is not available on the account.
 
 ## 10. Seed data
 
@@ -278,16 +279,29 @@ Shawarma and Sandwiches
 
 The photo also shows two plates at RM15 and RM12 whose names are not readable. Leave them out and add a `TODO` line in `docs/DECISIONS.md`. Extra cheese is RM1 on shawarma. Do not model it. Mention it as a possible future option only.
 
-## 11. Documents to produce
+## 11. Prototype additions and UI behavior
+
+The following refinements are part of the current prototype and should be preserved when maintaining or extending it:
+
+- **Table QR administration**: `/orders/tables/` is an administrator page for listing tables, assigning unique table numbers, creating tables, toggling availability, regenerating QR tokens, testing a table URL, downloading QR PNGs, and printing branded tent cards. QR previews can be generated in memory; `generate_table_qr` remains available for writing PNG files into `media/qr/`.
+- **Menu filtering**: The Manage Menu page accepts `?category=<id>` to filter items. Category count badges link to the matching filtered view, and filter controls include a compact reset action.
+- **Confirmation modal**: A shared Bootstrap modal in `base.html`, controlled by `main.js`, handles actions marked with `data-confirm`. Use it for destructive or consequential actions such as deleting menu/table records, clearing a cart, cancelling orders or reservations, and rejecting reservations. Keep clear action-specific text and buttons.
+- **Dashboard date controls**: Provide Today, This Week, and This Month presets plus custom start/end dates. The selected range filters the dashboard's headline figures, sales chart, order-type counts, best sellers, recent orders, and CSV report. The default headline metrics represent today; filtered metrics represent the selected period.
+- **CSV report**: The report includes selected-period summary figures and itemized order details, including customer, item, price, payment, and fulfillment data. Include a UTF-8 BOM so common spreadsheet programs open the file cleanly.
+- **Seed commands and accounts**: `seed_restaurant_demo` creates menu data, 10 tables, and the dedicated `admin@gmail.com` application administrator (not a Django staff user or superuser). `seed_customer_demo` creates five numbered customers, sample order and reservation activity, and refreshes activity dates relative to the current local date. Do not modify unrelated superuser accounts.
+- **Admin navigation and visual style**: Show administrators a focused sidebar with Dashboard, Manage Menu, Manage Orders, Manage Reservations, and Table QR Codes; omit public navigation links in that workspace. Maintain the warm restaurant palette (charcoal and orange, currently `#f97316`), custom status badges, and consistent compact filter controls.
+
+## 12. Documents to produce
 
 Keep these short and in plain language, because the group will use them to learn the code and to write the reports.
 
-- `README.md`: requirements, install, `.env` setup, MySQL setup, migrate, `seed_demo`, run, demo logins, generate QR codes, run tests, PythonAnywhere steps.
+- `README.md`: requirements, install, `.env` setup, MySQL setup, migrate, `seed_restaurant_demo`, `seed_customer_demo`, run, demo logins, generate QR codes, run tests, PythonAnywhere steps.
 - `docs/CODE_GUIDE.md`: for each app, what each file does and how the main flows work (register and login, ordering, QR dine-in, payment simulation, reservation, dashboard). Include how the join table `order_item` is used.
 - `docs/DECISIONS.md`: every assumption or deviation, with the reason.
 - `docs/TEST_CHECKLIST.md`: manual test steps for each page and flow, with expected results and a list of screenshots to take for the user manual.
+- `docs/SYSTEM_OVERVIEW.md`: a concise general explanation of the system, intended users, and main capabilities.
 - `docs/schema.sql`: generated schema.
 
-## 12. Final message
+## 13. Final message
 
 When you finish a phase, say what you built, what you tested and what is left. When everything is finished, list: how to run it locally, the demo logins, the assumptions in `docs/DECISIONS.md`, and anything the group must fill in (opening hours, contact details, real photos, real menu prices, number of tables, restaurant address).
