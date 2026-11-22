@@ -52,11 +52,13 @@ def cancel_reservation(request, reservation_id):
     if not request.user.is_admin and reservation.account != request.user:
         raise Http404("Reservation not found.")
 
-    if reservation.status in ['pending', 'confirmed']:
-        reservation.status = 'cancelled'
-        reservation.save()
+    if Reservation.objects.filter(
+        reservation_id=reservation.reservation_id,
+        status__in=['pending', 'confirmed'],
+    ).update(status='cancelled'):
         messages.success(request, f'Reservation #{reservation.reservation_id} for {reservation.reservation_date} has been cancelled.')
     else:
+        reservation.refresh_from_db(fields=['status'])
         messages.error(request, f'Reservation #{reservation.reservation_id} cannot be cancelled as it is already {reservation.get_status_display().lower()}.')
 
     if request.user.is_admin:
@@ -81,13 +83,31 @@ def manage_reservations(request):
         res = get_object_or_404(Reservation, reservation_id=reservation_id)
 
         if action == 'confirm':
-            res.status = 'confirmed'
-            res.save()
-            messages.success(request, f'Reservation #{res.reservation_id} for {res.account.full_name} is now CONFIRMED.')
+            new_status = 'confirmed'
         elif action == 'reject':
-            res.status = 'rejected'
-            res.save()
-            messages.warning(request, f'Reservation #{res.reservation_id} for {res.account.full_name} has been REJECTED.')
+            new_status = 'rejected'
+        else:
+            new_status = None
+
+        if new_status and Reservation.objects.filter(
+            reservation_id=res.reservation_id,
+            status='pending',
+        ).update(status=new_status):
+            if new_status == 'confirmed':
+                messages.success(request, f'Reservation #{res.reservation_id} for {res.account.full_name} is now CONFIRMED.')
+            else:
+                messages.warning(request, f'Reservation #{res.reservation_id} for {res.account.full_name} has been REJECTED.')
+        elif new_status:
+            res.refresh_from_db(fields=['status'])
+            messages.warning(
+                request,
+                f'Reservation #{res.reservation_id} is already {res.get_status_display().lower()} and cannot be changed.',
+            )
+        elif res.status != 'pending':
+            messages.warning(
+                request,
+                f'Reservation #{res.reservation_id} is already {res.get_status_display().lower()} and cannot be changed.',
+            )
         return redirect('reservations:manage_reservations')
 
     context = {
