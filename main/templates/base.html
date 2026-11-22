@@ -1,4 +1,4 @@
-{% load static %}
+{% load static restaurant_hours %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -208,10 +208,10 @@
                         <span class="text-muted mx-2">·</span>
                         <span class="text-secondary">Authentic Middle-Eastern &amp; BBQ Cuisine</span>
                         <span class="text-muted mx-2 d-none d-md-inline">·</span>
-                        <span class="text-secondary d-none d-md-inline">Parit Raja, 86400 Batu Pahat, Johor</span>
+                        <span class="text-secondary d-none d-md-inline">8, Jalan Universiti 3, Bandar Universiti, Parit Raja, Johor Bahru 85400</span>
                     </div>
                     <div class="text-secondary small">
-                        <span>Daily: 11:00 AM – 11:30 PM</span>
+                        <span>Daily: {% restaurant_hours %}</span>
                         <span class="text-muted mx-2">·</span>
                         <span>BIK11003 &amp; BIK20404 Project</span>
                     </div>

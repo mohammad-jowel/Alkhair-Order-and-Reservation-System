@@ -45,7 +45,7 @@ prototype/
   - `home(request)`: Renders the home landing page with restaurant intro, operating hours, and the accessible flame animation multimedia element.
   - `about(request)`: Renders the About & Contact page with restaurant address in Parit Raja, phone numbers, and hours.
   - `custom_404(request, exception)` / `custom_403(request, exception)`: Custom error views returning HTTP 404/403.
-- `management/commands/seed_restaurant_demo.py`: Populates the menu from the restaurant photos (78 active items) and assigns locally stored AI-enhanced restorations and illustrations based on cropped original menu artwork. Image provenance and the accuracy disclaimer are listed in `docs/MENU_PHOTO_SOURCES.md`. It also creates 10 restaurant tables with QR tokens and the admin account. Replaced and unreadable legacy entries are marked unavailable so order history is preserved.
+- `management/commands/seed_restaurant_demo.py`: Populates the current 78-item menu catalog from the restaurant photos and assigns locally stored AI-enhanced restorations and illustrations based on cropped original menu artwork. Image provenance and the accuracy disclaimer are listed in `docs/MENU_PHOTO_SOURCES.md`. It also creates 10 restaurant tables with QR tokens and the admin account. `--delete` removes unused tracked seed data but preserves history-linked rows by making menu items unavailable, tables inactive, and demo admin accounts inactive as needed. `--adopt-existing` is an explicit one-time migration step for confirmed legacy demo tables 1–10 and the canonical demo admin after a normal seed run.
 - `management/commands/seed_customer_demo.py`: Creates 5 numbered demo customers (`customer1@demo.com` – `customer5@demo.com`) and seeds 15 realistic orders across the week plus 8 reservations. Order and reservation dates refresh relative to the current local date when rerun. Supports `--clear` to rebuild activity for the five demo customers and `--delete` to remove those accounts plus all their orders and reservations.
 
 ### App 2: `accounts`
@@ -117,7 +117,7 @@ prototype/
 - `models.py`:
   - `Reservation`: `account_id`, `reservation_date`, `reservation_time`, `party_size` (1-20), `status` (`pending`, `confirmed`, `rejected`, `cancelled`), `note`.
 - `forms.py`:
-  - `ReservationBookingForm`: Validates party size between 1 and 20, rejects past dates and times, and verifies time falls within restaurant operating hours (11:00 – 23:30).
+  - `ReservationBookingForm`: Validates party size between 1 and 20, rejects past dates and times, and verifies time falls within restaurant operating hours (11:00 – 23:00).
 - `views.py`:
   - `reservation_list`: Booking form and customer's own reservation list.
   - `cancel_reservation`: Customer cancels their future pending or confirmed reservation.
@@ -191,7 +191,7 @@ To resolve this relationship into Third Normal Form (3NF), the join table `order
 ### Flow 5: Table Reservation
 1. Customer visits `/reservations/`.
 2. Inputs date, time, party size (1–20), and special requests.
-3. Form verifies date is not in the past, time is within operating hours (11:00–23:30), and today's reservations are not in the past.
+3. Form verifies date is not in the past, time is within operating hours (11:00–23:00), and today's reservations are not in the past.
 4. Reservation is created with `status = 'pending'`.
 5. Admin visits `/reservations/manage/` and clicks "Confirm" or "Reject".
 6. Customer can cancel their own pending or confirmed reservation anytime.

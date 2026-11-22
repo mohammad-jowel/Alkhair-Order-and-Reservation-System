@@ -18,7 +18,7 @@ This checklist details manual test procedures for each of the 13 pages and end-t
 
 ### Page 1: Home Page (`/`)
 - **Step 1**: Visit `http://127.0.0.1:8000/`.
-- **Expected Result**: Page loads with 200 OK. Displays restaurant introduction, operating hours (11:00 to 23:30), animated charcoal flame element, house specialties cards, and navigation bar.
+- **Expected Result**: Page loads with 200 OK. Displays restaurant introduction, operating hours (11:00 AM to 11:00 PM), animated charcoal flame element, house specialties cards, and navigation bar.
 - **Step 2**: Click "View Menu & Order".
 - **Expected Result**: Smoothly navigates to `/menu/`.
 
@@ -34,7 +34,7 @@ This checklist details manual test procedures for each of the 13 pages and end-t
 
 ### Page 3: About & Contact Page (`/about/`)
 - **Step 1**: Click "About & Contact" in navbar.
-- **Expected Result**: Displays Alkhair story, Parit Raja location, contact phone numbers, operating hours, and kitchen illustration.
+- **Expected Result**: Displays the Alkhair story, confirmed Bandar Universiti, Parit Raja address, phone/WhatsApp contact, operating hours, and the Yemeni-building hero image.
 
 ### Page 4: Login Page (`/accounts/login/`)
 - **Step 1**: Click "Login" in navbar.
@@ -85,7 +85,7 @@ This checklist details manual test procedures for each of the 13 pages and end-t
 - **Step 2**: Choose a date in the past (e.g. yesterday). Click "Request Reservation".
 - **Expected Result**: Error: *"Reservation date cannot be in the past."*
 - **Step 3**: Choose tomorrow's date at 03:00 AM.
-- **Expected Result**: Error: *"Reservation time must be within restaurant operating hours (11:00 – 23:30)."*
+- **Expected Result**: Error: *"Reservation time must be within restaurant operating hours (11:00 – 23:00)."*
 - **Step 4**: Enter tomorrow's date at 19:30, party size 6, note "Family dinner".
 - **Expected Result**: Reservation created with status "Pending". Appears immediately in the right-hand table.
 - **Step 5**: Click "Cancel" on the reservation.

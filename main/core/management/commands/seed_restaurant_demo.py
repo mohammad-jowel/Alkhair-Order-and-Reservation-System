@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from accounts.models import Account
+from core.models import RestaurantDemoSeedRecord
 from menu.models import MenuCategory, MenuItem
 from orders.models import RestaurantTable
 
@@ -10,12 +11,64 @@ from orders.models import RestaurantTable
 class Command(BaseCommand):
     help = 'Seeds restaurant data (categories, menu items, and tables) plus the demo admin account.'
 
+    SEED_KEY = 'restaurant_demo'
+    ACCOUNT_RECORD = 'account'
+    CATEGORY_RECORD = 'menu_category'
+    MENU_ITEM_RECORD = 'menu_item'
+    TABLE_RECORD = 'restaurant_table'
+
+    def add_arguments(self, parser):
+        mode_group = parser.add_mutually_exclusive_group()
+        mode_group.add_argument(
+            '--delete',
+            action='store_true',
+            help=(
+                'Remove unused demo-seed-owned menu rows, tables, and the demo admin account, '
+                'then exit. Seeded rows with order or reservation history are retained safely.'
+            ),
+        )
+        mode_group.add_argument(
+            '--adopt-existing',
+            action='store_true',
+            help=(
+                'Explicitly record ownership of legacy demo tables 1-10 and the canonical demo admin '
+                'after a normal seed run, so a later --delete can clean them safely.'
+            ),
+        )
+
+    def _mark_seed_owned(self, object_type, obj):
+        RestaurantDemoSeedRecord.objects.get_or_create(
+            seed_key=self.SEED_KEY,
+            object_type=object_type,
+            object_id=obj.pk,
+        )
+
+    def _is_seed_owned(self, object_type, obj):
+        return RestaurantDemoSeedRecord.objects.filter(
+            seed_key=self.SEED_KEY,
+            object_type=object_type,
+            object_id=obj.pk,
+        ).exists()
+
+    def _seed_record_ids(self, object_type):
+        return RestaurantDemoSeedRecord.objects.filter(
+            seed_key=self.SEED_KEY,
+            object_type=object_type,
+        ).values_list('object_id', flat=True)
+
     @transaction.atomic
     def handle(self, *args, **options):
+        if options['delete']:
+            self._delete_seeded_data()
+            return
+        if options['adopt_existing']:
+            self._adopt_existing_seeded_data()
+            return
+
         self.stdout.write(self.style.NOTICE('Seeding demo data...'))
 
         # 1. Seed Accounts
-        admin, created = Account.objects.get_or_create(
+        admin, admin_created = Account.objects.get_or_create(
             email='admin@gmail.com',
             defaults={
                 'full_name': 'Demo Admin',
@@ -26,39 +79,46 @@ class Command(BaseCommand):
                 'is_superuser': False,
             }
         )
-        if created:
+        if admin_created:
             admin.set_password('Admin1234!')
             admin.save()
+            self._mark_seed_owned(self.ACCOUNT_RECORD, admin)
             self.stdout.write(self.style.SUCCESS(f'Created admin account: {admin.email}'))
-        # This demo account uses the app's role-protected admin portal, not
-        # Django Admin, so it needs neither staff nor superuser privileges.
-        changed_fields = []
-        for field, value in (
-            ('role', 'admin'),
-            ('is_staff', False),
-            ('is_superuser', False),
-            ('is_active', True),
-        ):
-            if getattr(admin, field) != value:
-                setattr(admin, field, value)
-                changed_fields.append(field)
-        if changed_fields:
-            admin.save(update_fields=changed_fields)
+        elif self._is_seed_owned(self.ACCOUNT_RECORD, admin):
+            # This demo account uses the app's role-protected admin portal, not
+            # Django Admin, so it needs neither staff nor superuser privileges.
+            changed_fields = []
+            for field, value in (
+                ('role', 'admin'),
+                ('is_staff', False),
+                ('is_superuser', False),
+                ('is_active', True),
+            ):
+                if getattr(admin, field) != value:
+                    setattr(admin, field, value)
+                    changed_fields.append(field)
+            if changed_fields:
+                admin.save(update_fields=changed_fields)
 
-        # Remove any elevated permissions left by an older version of this seed.
-        admin.groups.clear()
-        admin.user_permissions.clear()
+            # Remove any elevated permissions left by an older version of this seed.
+            admin.groups.clear()
+            admin.user_permissions.clear()
+        else:
+            self.stdout.write(self.style.WARNING(
+                f'Skipped existing unowned account: {admin.email}'
+            ))
 
         # 2. Seed Restaurant Tables (10 tables with random qr_token)
         for num in range(1, 11):
-            table, created = RestaurantTable.objects.get_or_create(
+            table, table_created = RestaurantTable.objects.get_or_create(
                 table_number=num,
                 defaults={
                     'qr_token': secrets.token_urlsafe(16),
                     'is_active': True,
                 }
             )
-            if created:
+            if table_created:
+                self._mark_seed_owned(self.TABLE_RECORD, table)
                 self.stdout.write(f'Created Table {num} (Token: {table.qr_token})')
 
         # 3. Seed the readable entries from the supplied menu photos.
@@ -167,13 +227,18 @@ class Command(BaseCommand):
         }
 
         for category_name, menu_items in menu_catalog.items():
-            category, _ = MenuCategory.objects.get_or_create(category_name=category_name)
+            category, _ = MenuCategory.objects.get_or_create(
+                category_name=category_name
+            )
+            # The seed already refreshes these named catalog records, so it can
+            # safely claim them on the first run after ownership tracking ships.
+            self._mark_seed_owned(self.CATEGORY_RECORD, category)
             for name, price, image_filename in menu_items:
                 description = 'Extra cheese + RM 1' if name in add_on_items else ''
                 image_name = f'menu_items/catalog/{image_filename}'
                 item = MenuItem.objects.filter(item_name=name).order_by('item_id').first()
                 if item is None:
-                    MenuItem.objects.create(
+                    item = MenuItem.objects.create(
                         category=category,
                         item_name=name,
                         description=description,
@@ -181,6 +246,7 @@ class Command(BaseCommand):
                         image=image_name,
                         is_available=True,
                     )
+                    self._mark_seed_owned(self.MENU_ITEM_RECORD, item)
                 else:
                     item.category = category
                     item.item_name = name
@@ -189,23 +255,136 @@ class Command(BaseCommand):
                     item.image = image_name
                     item.is_available = True
                     item.save(update_fields=['category', 'item_name', 'description', 'price', 'image', 'is_available'])
-
-        # Keep old demo dishes in order history, but remove them from the menu.
-        legacy_items = [
-            'Plate beef kebab', 'Plate chicken kebab', 'Plate mixed kebab',
-            '1/4 chicken barbecue', 'Mix barbecue', '1/4 chicken barbecue with rice',
-            'Kebab mix with rice', 'Shawarma beef with rice', 'Shawarma chicken with rice',
-            'Lamb shank', 'Moffa fish and bread', 'Moffa fish and rice', 'Plate shish tawook',
-            'Chicken kabsa', 'Mugalgal beef', 'Orange juice', 'Carrot juice',
-            'Watermelon juice', 'Pineapple juice', 'Rutab with honey', 'Lemon mint',
-            'Falafel sandwich', 'Sandwich zinger', 'Sandwich shish tawook',
-        ]
-        MenuItem.objects.filter(item_name__in=legacy_items).update(is_available=False)
+                self._mark_seed_owned(self.MENU_ITEM_RECORD, item)
 
         self.stdout.write(self.style.SUCCESS('\nDemo data seeding complete!'))
         self.stdout.write('=' * 60)
         self.stdout.write(self.style.SUCCESS('DEMO LOGINS:'))
         self.stdout.write(f'  Admin:      {admin.email}')
-        if created:
+        if admin_created:
             self.stdout.write('  Initial password: Admin1234! (change it after setup)')
         self.stdout.write('=' * 60)
+
+    def _adopt_existing_seeded_data(self):
+        """Explicitly transfer known legacy demo fixtures to tracked ownership."""
+        adopted_table_count = 0
+        adopted_admin_count = 0
+
+        # Tables were historically created solely by their numbers. Adoption is
+        # opt-in because table numbers may have since been repurposed by a user.
+        for table in RestaurantTable.objects.filter(table_number__range=(1, 10)):
+            if not self._is_seed_owned(self.TABLE_RECORD, table):
+                self._mark_seed_owned(self.TABLE_RECORD, table)
+                adopted_table_count += 1
+
+        # Only the original canonical demo account is eligible for adoption.
+        demo_admins = Account.objects.filter(
+            email='admin@gmail.com',
+            full_name='Demo Admin',
+            role='admin',
+            is_staff=False,
+            is_superuser=False,
+        )
+        for demo_admin in demo_admins:
+            if not self._is_seed_owned(self.ACCOUNT_RECORD, demo_admin):
+                self._mark_seed_owned(self.ACCOUNT_RECORD, demo_admin)
+                adopted_admin_count += 1
+
+        self.stdout.write(self.style.WARNING(
+            'Adopted legacy demo ownership for '
+            f'{adopted_table_count} table(s) and {adopted_admin_count} canonical admin account(s).'
+        ))
+        self.stdout.write(self.style.SUCCESS(
+            'Run the normal seed command first to claim catalog rows, then use --delete when ready. '
+            'Only run --adopt-existing after confirming tables 1-10 are legacy demo tables.'
+        ))
+
+    def _delete_seeded_data(self):
+        """Delete seed-owned rows without breaking order or reservation history."""
+        catalog_items = MenuItem.objects.filter(
+            item_id__in=self._seed_record_ids(self.MENU_ITEM_RECORD)
+        )
+        category_ids = self._seed_record_ids(self.CATEGORY_RECORD)
+
+        historical_items = catalog_items.filter(order_items__isnull=False).distinct()
+        historical_item_count = historical_items.count()
+        historical_items.update(is_available=False)
+
+        removable_items = catalog_items.filter(order_items__isnull=True)
+        removed_item_count = removable_items.count()
+        removable_item_ids = list(removable_items.values_list('item_id', flat=True))
+        removable_items.delete()
+        RestaurantDemoSeedRecord.objects.filter(
+            seed_key=self.SEED_KEY,
+            object_type=self.MENU_ITEM_RECORD,
+            object_id__in=removable_item_ids,
+        ).delete()
+
+        removable_categories = MenuCategory.objects.filter(
+            category_id__in=category_ids,
+            items__isnull=True,
+        )
+        removed_category_count = removable_categories.count()
+        removable_category_ids = list(removable_categories.values_list('category_id', flat=True))
+        removable_categories.delete()
+        RestaurantDemoSeedRecord.objects.filter(
+            seed_key=self.SEED_KEY,
+            object_type=self.CATEGORY_RECORD,
+            object_id__in=removable_category_ids,
+        ).delete()
+
+        seeded_tables = RestaurantTable.objects.filter(
+            table_id__in=self._seed_record_ids(self.TABLE_RECORD)
+        )
+        historical_tables = seeded_tables.filter(orders__isnull=False).distinct()
+        historical_table_count = historical_tables.count()
+        historical_tables.update(is_active=False)
+
+        removable_tables = seeded_tables.filter(orders__isnull=True)
+        removed_table_count = removable_tables.count()
+        removable_table_ids = list(removable_tables.values_list('table_id', flat=True))
+        removable_tables.delete()
+        RestaurantDemoSeedRecord.objects.filter(
+            seed_key=self.SEED_KEY,
+            object_type=self.TABLE_RECORD,
+            object_id__in=removable_table_ids,
+        ).delete()
+
+        demo_admins = list(Account.objects.filter(
+            account_id__in=self._seed_record_ids(self.ACCOUNT_RECORD)
+        ))
+        removed_admin_count = 0
+        retained_admin_count = 0
+        removed_admin_ids = []
+        for demo_admin in demo_admins:
+            if demo_admin.orders.exists() or demo_admin.reservations.exists():
+                demo_admin.is_active = False
+                demo_admin.save(update_fields=['is_active'])
+                retained_admin_count += 1
+            else:
+                removed_admin_ids.append(demo_admin.account_id)
+                demo_admin.delete()
+                removed_admin_count += 1
+        RestaurantDemoSeedRecord.objects.filter(
+            seed_key=self.SEED_KEY,
+            object_type=self.ACCOUNT_RECORD,
+            object_id__in=removed_admin_ids,
+        ).delete()
+
+        self.stdout.write(self.style.WARNING(
+            'Deleted '
+            f'{removed_item_count} unused seeded menu items, '
+            f'{removed_category_count} empty seeded categories, '
+            f'{removed_table_count} unused seeded tables, and '
+            f'{removed_admin_count} demo admin account(s).'
+        ))
+        if historical_item_count or historical_table_count or retained_admin_count:
+            self.stdout.write(self.style.WARNING(
+                'Retained history-linked data safely: '
+                f'{historical_item_count} menu item(s) marked unavailable, '
+                f'{historical_table_count} table(s) marked inactive, and '
+                f'{retained_admin_count} admin account(s) deactivated.'
+            ))
+        self.stdout.write(self.style.SUCCESS(
+            'Restaurant demo cleanup complete. Catalog image files were not removed.'
+        ))

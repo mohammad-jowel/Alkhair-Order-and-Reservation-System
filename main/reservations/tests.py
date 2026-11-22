@@ -56,7 +56,7 @@ class ReservationsTestCase(TestCase):
         self.assertFalse(Reservation.objects.filter(account=self.customer1).exists())
 
     def test_invalid_operating_hours_rejected(self):
-        """Reservation outside 11:00 to 23:30 fails validation."""
+        """Reservation outside 11:00 to 23:00 fails validation."""
         self.client.login(email='cust1_res@alkhair.com', password='CustomerPassword123!')
         future_date = timezone.localdate() + timedelta(days=2)
         response = self.client.post(reverse('reservations:reservation_list'), {

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static restaurant_hours %}
 
 {% block title %}About & Contact - Restoran Alkhair{% endblock %}
 
@@ -8,20 +8,16 @@
     <!-- Left — Story -->
     <div class="col-lg-6">
         <div class="page-header">
-            <span class="hero-badge mb-3"><i class="bi bi-geo-alt"></i> Parit Raja, Batu Pahat</span>
+            <span class="hero-badge mb-3"><i class="bi bi-geo-alt"></i> Bandar Universiti, Parit Raja</span>
             <h1>About <span style="font-style: italic;">Restoran Alkhair</span></h1>
         </div>
 
         <p class="text-secondary" style="font-size: 0.95rem; line-height: 1.7;">
-            Restoran Alkhair brings genuine Middle-Eastern and Arabian culinary hospitality to Parit Raja, Johor.
-        </p>
-        <p class="text-secondary">
-            From our fresh charcoal-grilled kebabs and traditional Moffa fish to signature garlic shawarma wraps and slow-cooked lamb shanks, every dish is prepared with fresh ingredients and authentic regional spices.
+            We invite you to experience the essence of Yemeni hospitality and authentic flavors. We prepare our meals using traditional methods and the finest fresh ingredients, offering a unique dining experience that reflects the rich heritage of Yemeni cuisine.
         </p>
 
-        <!-- Photo Placeholder -->
         <div class="clean-photo-container my-4" style="height: 220px; border-radius: var(--radius-xl);">
-            <i class="bi bi-camera placeholder-icon"></i>
+            <img src="{% static 'img/alkhair-yemeni-building.webp' %}" alt="Yemeni architecture: traditional stone building with ornate windows">
         </div>
     </div>
 
@@ -36,8 +32,7 @@
                 </div>
                 <div>
                     <h6>Restaurant Address</h6>
-                    <p>Restoran Alkhair<br>Parit Raja, 86400 Batu Pahat, Johor, Malaysia</p>
-                    <span class="badge bg-light text-muted border small">[Placeholder: Update with lot/shop number]</span>
+                    <p>8, Jalan Universiti 3, Bandar Universiti<br>Parit Raja, Johor Bahru 85400</p>
                 </div>
             </div>
 
@@ -47,8 +42,7 @@
                 </div>
                 <div>
                     <h6>Operating Hours</h6>
-                    <p>Monday to Sunday: <strong>{{ opening_time }} – {{ closing_time }}</strong></p>
-                    <span class="badge bg-light text-muted border small">[Placeholder: Confirm exact hours]</span>
+                    <p>Daily from {% restaurant_hours %}</p>
                 </div>
             </div>
 
@@ -58,19 +52,17 @@
                 </div>
                 <div>
                     <h6>Phone Contact</h6>
-                    <p>+60 12-345 6789 / +60 7-123 4567</p>
-                    <span class="badge bg-light text-muted border small">[Placeholder: Update phone number]</span>
+                    <p>+60 11-6830 9514</p>
                 </div>
             </div>
 
             <div class="about-info-item" style="border-bottom: none;">
                 <div class="info-icon">
-                    <i class="bi bi-envelope"></i>
+                    <i class="bi bi-whatsapp"></i>
                 </div>
                 <div>
-                    <h6>Email Contact</h6>
-                    <p>contact@alkhair-restaurant.com</p>
-                    <span class="badge bg-light text-muted border small">[Placeholder: Update email]</span>
+                    <h6>WhatsApp</h6>
+                    <p>011-6830 9514</p>
                 </div>
             </div>
 

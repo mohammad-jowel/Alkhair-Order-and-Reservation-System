@@ -75,10 +75,11 @@ python main/manage.py migrate
 ```
 
 ### Step 7: Seed demo data
-Seed the restaurant setup: menu categories, 78 readable menu items transcribed from the restaurant menu photos, 10 restaurant tables with QR tokens, and the demo admin account. The menu uses locally stored AI-enhanced restorations and illustrations based on cropped original menu artwork. See `docs/MENU_PHOTO_SOURCES.md` for provenance and the accuracy disclaimer. Rerun this command to refresh menu names, prices, and item photo paths; replaced and unreadable legacy entries are marked unavailable rather than deleted so order history remains intact.
+Seed the restaurant setup: menu categories, 78 readable menu items transcribed from the restaurant menu photos, 10 restaurant tables with QR tokens, and the demo admin account. The menu uses locally stored AI-enhanced restorations and illustrations based on cropped original menu artwork. See `docs/MENU_PHOTO_SOURCES.md` for provenance and the accuracy disclaimer. Rerun this command to refresh the current catalog's names, prices, and item photo paths; unrelated legacy menu rows are not changed.
 ```bash
 python main/manage.py seed_restaurant_demo
 ```
+Use `python main/manage.py seed_restaurant_demo --delete` only when cleaning tracked demo data: it deletes unused catalog items, empty categories, unused tables, and demo admin accounts. Records connected to order or reservation history are retained safely and deactivated where appropriate; committed catalog image files are never deleted. For a database seeded before ownership tracking was introduced, run the normal seed command first, then run `python main/manage.py seed_restaurant_demo --adopt-existing` once only after confirming that tables 1–10 and `admin@gmail.com` are legacy demo fixtures; `--delete` can then clean those records safely.
 
 Seed five numbered demo customers and their orders and reservations. Dates are anchored to the current local date whenever the command runs:
 ```bash
@@ -118,12 +119,12 @@ Run `seed_restaurant_demo` for restaurant data and the admin account. Run `seed_
 
 ## 4. Running Automated Tests
 
-Run the complete 55-test automated test suite across all 6 applications:
+Run the complete 62-test automated test suite across all 6 applications:
 ```bash
 python main/manage.py test core accounts menu orders reservations dashboard
 ```
 
-All 55 tests execute against an isolated test database and verify:
+All 62 tests execute against an isolated test database and verify:
 - Registration, password hashing, and generic login error handling
 - Role-based access control (`admin_required` blocking customers with 403)
 - Ownership security (customers receiving 404 on other customers' orders and bookings)
@@ -216,11 +217,13 @@ python main/manage.py collectstatic --noinput
 
 ---
 
-## 7. Placeholder Items to Finalize (For Group Members)
+## 7. Restaurant Information and Remaining Checks
 
-The following items are placeholders and should be confirmed with the restaurant:
-- **Operating Hours**: Configured to `11:00` to `23:30` in `settings.py` (`OPENING_TIME` and `CLOSING_TIME`).
-- **Contact Details & Address**: Restoran Alkhair, Parit Raja, Batu Pahat, Johor.
-- **Menu Photos**: Add genuine food photographs to menu items through Manage Menu. The supplied Yemeni building photo is already used in the home-page hero.
+Confirmed restaurant information:
+- **Operating Hours**: Daily, `11:00` to `23:00` in `settings.py` (`OPENING_TIME` and `CLOSING_TIME`).
+- **Contact Details & Address**: 8, Jalan Universiti 3, Bandar Universiti, Parit Raja, Johor Bahru 85400. Phone/WhatsApp: +60 11-6830 9514.
+
+The following items should still be reviewed before launch:
+- **Menu Photos**: Add genuine food photographs to menu items through Manage Menu. A wide hero is generated from the supplied Yemeni building image for the home and About/Contact sections.
 - **Menu Prices**: Seeded from the supplied menu photos; verify with restaurant staff before launch.
 - **Partially Obscured Captions**: Some labels near the bottoms of the supplied screenshots are covered by video controls; verify them before adding those items.

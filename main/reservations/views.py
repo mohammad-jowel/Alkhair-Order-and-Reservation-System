@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import Http404
-from django.conf import settings
 from accounts.decorators import admin_required
 from .models import Reservation
 from .forms import ReservationBookingForm
@@ -35,8 +34,6 @@ def reservation_list(request):
     context = {
         'form': form,
         'reservations': reservations,
-        'opening_time': getattr(settings, 'OPENING_TIME', '11:00'),
-        'closing_time': getattr(settings, 'CLOSING_TIME', '23:30'),
     }
     return render(request, 'reservations/reservation_list.html', context)
 

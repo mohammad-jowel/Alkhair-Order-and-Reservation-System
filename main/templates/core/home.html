@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static restaurant_hours %}
 
 {% block title %}Restoran Alkhair - Yemeni Rice Dishes & Middle-Eastern Cuisine{% endblock %}
 
@@ -15,7 +15,7 @@
             </h1>
 
             <p class="hero-desc mb-4">
-                Welcome to Restoran Alkhair in Parit Raja, Johor. Enjoy Yemeni rice dishes, family meals, traditional specialties, shawarma, and fresh juices.
+                Experience Yemeni hospitality and authentic flavors, prepared with traditional methods and fresh ingredients in Bandar Universiti, Parit Raja.
             </p>
 
             <div class="d-flex flex-wrap gap-3 mb-4">
@@ -62,7 +62,7 @@
                             <i class="bi bi-clock fs-5"></i>
                             <span class="info-label">Hours Today</span>
                         </div>
-                        <span class="info-text">{{ opening_time }} – {{ closing_time }}</span>
+                        <span class="info-text">{% restaurant_hours %}</span>
                     </div>
                 </div>
             </div>

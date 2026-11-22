@@ -23,9 +23,9 @@ ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '127.0.0.1,l
 
 SITE_BASE_URL = os.environ.get('SITE_BASE_URL', 'http://127.0.0.1:8000')
 
-# Restaurant operating hours (Placeholders - group to confirm)
+# Restaurant operating hours confirmed by the restaurant's contact card.
 OPENING_TIME = os.environ.get('OPENING_TIME', '11:00')
-CLOSING_TIME = os.environ.get('CLOSING_TIME', '23:30')
+CLOSING_TIME = os.environ.get('CLOSING_TIME', '23:00')
 
 # Application definition
 INSTALLED_APPS = [

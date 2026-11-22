@@ -34,7 +34,8 @@ This document records technical decisions, assumptions, and design rationale for
 
 - The supplied shawarma poster identifies the RM15 and RM12 plates as beef shawarma and chicken shawarma; both are included in `seed_restaurant_demo`.
 - Captions in the bottom row of shawarma and fresh-juice posters are covered by video controls. Their unclear products are excluded from the active menu pending restaurant confirmation; the two readable bottom-row drinks (Milo ice and Sirap bandung) are included.
-- The poster-reading `Lemon ment` is retained; a previous `Lemon mint` row is marked unavailable so the same drink is not listed twice.
+- The poster-reading `Lemon ment` is retained. Legacy menu rows were removed from the deployment database and are intentionally not managed by the restaurant seed command.
+- Demo cleanup uses durable ownership records rather than image paths, table numbers, or email alone. Existing deployments must opt in to adopt confirmed legacy demo tables and the canonical demo admin before cleanup; this avoids deleting unrelated records that happen to look similar.
 - "Extra cheese" (+ RM1) is shown in shawarma descriptions as an add-on note, not a separately orderable item, because the current schema has no menu modifiers.
 - Menu descriptions are blank unless the poster contains an add-on note; the public cards do not invent descriptive copy. Menu item images are AI-enhanced restorations and illustrations created from cropped original menu artwork. The Yemeni Specialties prompts use a conservative restoration approach to reduce blur while retaining the source dish's serving style. The page discloses that distinction and `docs/MENU_PHOTO_SOURCES.md` records the provenance. Replace them with verified restaurant photography when available.
 
@@ -42,8 +43,8 @@ This document records technical decisions, assumptions, and design rationale for
 
 ## 5. Operating Hours and Contact Information
 
-- Placeholder restaurant hours are set to 11:00 AM – 11:30 PM (`OPENING_TIME = '11:00'`, `CLOSING_TIME = '23:30'`).
-- Group members will confirm exact business hours and update the environment or `settings.py`.
+- Confirmed restaurant hours are 11:00 AM – 11:00 PM (`OPENING_TIME = '11:00'`, `CLOSING_TIME = '23:00'`). Public pages render this shared configuration so displayed hours and reservation validation stay aligned.
+- Confirmed address: 8, Jalan Universiti 3, Bandar Universiti, Parit Raja, Johor Bahru 85400. Confirmed phone and WhatsApp: +60 11-6830 9514.
 
 ---
 

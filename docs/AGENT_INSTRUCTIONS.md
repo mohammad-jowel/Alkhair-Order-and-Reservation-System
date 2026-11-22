@@ -127,7 +127,7 @@ Payment (simulation only)
 
 Reservations
 - Fields: date, time, party size (1 to 20), optional note.
-- Date cannot be in the past. Time must be inside opening hours. Put `OPENING_TIME` and `CLOSING_TIME` in settings as placeholders (11:00 and 23:30) and note in the README that the group must confirm them.
+- Date cannot be in the past. Time must be inside the confirmed opening hours (`OPENING_TIME = '11:00'` and `CLOSING_TIME = '23:00'`).
 - A new reservation is `pending`. Admin sets `confirmed` or `rejected`. A customer can cancel their own future reservation that is `pending` or `confirmed`.
 
 Dashboard figures
@@ -139,7 +139,7 @@ Dashboard figures
 |---|---|---|
 | Public | Home | Restaurant intro, opening hours, one multimedia element (short looping video or CSS animation, muted, with a text fallback) |
 | Public | Menu | Items grouped by category, images, price, add-to-cart. Works with or without a table context |
-| Public | About and Contact | Location in Parit Raja, opening hours, contact details (placeholders clearly marked) |
+| Public | About and Contact | Confirmed Bandar Universiti, Parit Raja address, opening hours, and phone/WhatsApp contact details |
 | Public | Login | Email and password |
 | Public | Register | Full name, email, phone, address, password with confirmation |
 | Customer | Cart and Checkout | Cart review, quantity update and remove, order type, address if delivery, payment method, payment simulation step |

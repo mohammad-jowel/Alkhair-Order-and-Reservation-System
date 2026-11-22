@@ -53,7 +53,7 @@ class ReservationBookingForm(forms.ModelForm):
         if res_date and res_time:
             # Check operating hours
             opening_str = getattr(settings, 'OPENING_TIME', '11:00')
-            closing_str = getattr(settings, 'CLOSING_TIME', '23:30')
+            closing_str = getattr(settings, 'CLOSING_TIME', '23:00')
 
             try:
                 open_hour, open_min = [int(x) for x in opening_str.split(':')]
@@ -62,7 +62,7 @@ class ReservationBookingForm(forms.ModelForm):
                 close_t = time(close_hour, close_min)
             except Exception:
                 open_t = time(11, 0)
-                close_t = time(23, 30)
+                close_t = time(23, 0)
 
             if res_time < open_t or res_time > close_t:
                 self.add_error(
