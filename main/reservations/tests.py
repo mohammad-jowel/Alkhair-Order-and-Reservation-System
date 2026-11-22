@@ -127,3 +127,30 @@ class ReservationsTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
         res.refresh_from_db()
         self.assertEqual(res.status, 'confirmed')
+
+    def test_admin_reservation_dashboard_defaults_to_pending_requests(self):
+        """The admin dashboard opens with pending reservation requests selected."""
+        future_date = timezone.localdate() + timedelta(days=2)
+        pending_reservation = Reservation.objects.create(
+            account=self.customer1,
+            reservation_date=future_date,
+            reservation_time='18:00',
+            party_size=2,
+            status='pending',
+        )
+        confirmed_reservation = Reservation.objects.create(
+            account=self.customer2,
+            reservation_date=future_date,
+            reservation_time='19:00',
+            party_size=4,
+            status='confirmed',
+        )
+
+        self.client.login(email='admin_res@alkhair.com', password='AdminPassword123!')
+        response = self.client.get(reverse('reservations:manage_reservations'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['status_filter'], 'pending')
+        self.assertEqual(list(response.context['reservations']), [pending_reservation])
+        self.assertContains(response, 'value="pending" selected', html=False)
+        self.assertNotContains(response, confirmed_reservation.account.full_name)

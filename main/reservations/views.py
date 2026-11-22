@@ -71,7 +71,7 @@ def manage_reservations(request):
     """
     reservations = Reservation.objects.select_related('account').all().order_by('-reservation_date', '-reservation_time')
 
-    status_filter = request.GET.get('status')
+    status_filter = request.GET.get('status', 'pending')
     if status_filter:
         reservations = reservations.filter(status=status_filter)
 
