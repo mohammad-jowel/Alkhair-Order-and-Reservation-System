@@ -13,4 +13,11 @@ db.sqlite3
 
 # Media and Static
 media/
+!main/media/
+main/media/*
+!main/media/menu_items/
+main/media/menu_items/*
+!main/media/menu_items/catalog/
+main/media/menu_items/catalog/*
+!main/media/menu_items/catalog/*.webp
 staticfiles/

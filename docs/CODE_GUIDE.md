@@ -25,7 +25,7 @@ prototype/
     │   ├── urls.py           # Top-level URL routing
     │   ├── wsgi.py           # WSGI entry point for web servers
     │   └── asgi.py           # ASGI entry point
-    ├── static/               # CSS, JS, and SVG placeholder images
+    ├── static/               # CSS, JS, and restaurant images
     ├── templates/            # HTML templates (base.html and error pages)
     ├── core/                 # Home, About & Contact, demo seed commands
     ├── accounts/             # User auth, registration, profiles, RBAC
@@ -45,7 +45,7 @@ prototype/
   - `home(request)`: Renders the home landing page with restaurant intro, operating hours, and the accessible flame animation multimedia element.
   - `about(request)`: Renders the About & Contact page with restaurant address in Parit Raja, phone numbers, and hours.
   - `custom_404(request, exception)` / `custom_403(request, exception)`: Custom error views returning HTTP 404/403.
-- `management/commands/seed_restaurant_demo.py`: Populates categories, 26 menu items, 10 restaurant tables with QR tokens, and the admin account.
+- `management/commands/seed_restaurant_demo.py`: Populates the menu from the restaurant photos (78 active items) and assigns locally stored AI-enhanced restorations and illustrations based on cropped original menu artwork. Image provenance and the accuracy disclaimer are listed in `docs/MENU_PHOTO_SOURCES.md`. It also creates 10 restaurant tables with QR tokens and the admin account. Replaced and unreadable legacy entries are marked unavailable so order history is preserved.
 - `management/commands/seed_customer_demo.py`: Creates 5 numbered demo customers (`customer1@demo.com` – `customer5@demo.com`) and seeds 15 realistic orders across the week plus 8 reservations. Order and reservation dates refresh relative to the current local date when rerun. Supports `--clear` to rebuild activity for the five demo customers and `--delete` to remove those accounts plus all their orders and reservations.
 
 ### App 2: `accounts`
@@ -69,7 +69,7 @@ prototype/
 ### App 3: `menu`
 - **Purpose**: Public digital menu and administrator menu catalog CRUD.
 - `models.py`:
-  - `MenuCategory`: Category title (e.g. "BBQ and Kebab", "Shawarma and Sandwiches"). Primary key: `category_id`.
+  - `MenuCategory`: Category title (e.g. "Yemeni Rice Dishes", "Family Meals", "Shawarma and Sandwiches"). Primary key: `category_id`.
   - `MenuItem`: Individual dish with `category` foreign key (`on_delete=models.PROTECT`), `item_name`, `description`, `price` (Decimal), `image`, and `is_available` boolean.
 - `forms.py`:
   - `CategoryForm`: Adds/edits categories.

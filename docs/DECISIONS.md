@@ -30,11 +30,13 @@ This document records technical decisions, assumptions, and design rationale for
 
 ---
 
-## 4. Unreadable Menu Items (TODO)
+## 4. Partially Obscured Menu Captions and Add-ons
 
-- The Alkhair menu photograph displayed two plate dishes priced at RM15 and RM12 where the item names were obscured.
-- **TODO**: Group members must verify the exact dish names with Restoran Alkhair staff and update `seed_restaurant_demo` or add them via the Admin Manage Menu interface.
-- "Extra cheese" (RM1 on shawarma) is noted as an add-on in the menu, but was excluded from the initial schema to keep the relational model minimal and strictly adhere to project guidelines.
+- The supplied shawarma poster identifies the RM15 and RM12 plates as beef shawarma and chicken shawarma; both are included in `seed_restaurant_demo`.
+- Captions in the bottom row of shawarma and fresh-juice posters are covered by video controls. Their unclear products are excluded from the active menu pending restaurant confirmation; the two readable bottom-row drinks (Milo ice and Sirap bandung) are included.
+- The poster-reading `Lemon ment` is retained; a previous `Lemon mint` row is marked unavailable so the same drink is not listed twice.
+- "Extra cheese" (+ RM1) is shown in shawarma descriptions as an add-on note, not a separately orderable item, because the current schema has no menu modifiers.
+- Menu descriptions are blank unless the poster contains an add-on note; the public cards do not invent descriptive copy. Menu item images are AI-enhanced restorations and illustrations created from cropped original menu artwork. The Yemeni Specialties prompts use a conservative restoration approach to reduce blur while retaining the source dish's serving style. The page discloses that distinction and `docs/MENU_PHOTO_SOURCES.md` records the provenance. Replace them with verified restaurant photography when available.
 
 ---
 

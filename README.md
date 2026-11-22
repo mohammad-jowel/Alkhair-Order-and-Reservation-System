@@ -75,7 +75,7 @@ python main/manage.py migrate
 ```
 
 ### Step 7: Seed demo data
-Seed the restaurant setup: categories, 26 menu items, 10 restaurant tables with QR tokens, and the demo admin account:
+Seed the restaurant setup: menu categories, 78 readable menu items transcribed from the restaurant menu photos, 10 restaurant tables with QR tokens, and the demo admin account. The menu uses locally stored AI-enhanced restorations and illustrations based on cropped original menu artwork. See `docs/MENU_PHOTO_SOURCES.md` for provenance and the accuracy disclaimer. Rerun this command to refresh menu names, prices, and item photo paths; replaced and unreadable legacy entries are marked unavailable rather than deleted so order history remains intact.
 ```bash
 python main/manage.py seed_restaurant_demo
 ```
@@ -118,12 +118,12 @@ Run `seed_restaurant_demo` for restaurant data and the admin account. Run `seed_
 
 ## 4. Running Automated Tests
 
-Run the complete 51-test automated test suite across all 6 applications:
+Run the complete 55-test automated test suite across all 6 applications:
 ```bash
 python main/manage.py test core accounts menu orders reservations dashboard
 ```
 
-All 51 tests execute against an isolated test database and verify:
+All 55 tests execute against an isolated test database and verify:
 - Registration, password hashing, and generic login error handling
 - Role-based access control (`admin_required` blocking customers with 403)
 - Ownership security (customers receiving 404 on other customers' orders and bookings)
@@ -221,6 +221,6 @@ python main/manage.py collectstatic --noinput
 The following items are placeholders and should be confirmed with the restaurant:
 - **Operating Hours**: Configured to `11:00` to `23:30` in `settings.py` (`OPENING_TIME` and `CLOSING_TIME`).
 - **Contact Details & Address**: Restoran Alkhair, Parit Raja, Batu Pahat, Johor.
-- **Menu Photos**: Replace SVG placeholders in `static/img/` with genuine photographs taken at the restaurant.
-- **Menu Prices**: Seeded from preliminary menu photo; verify with restaurant staff.
-- **Two Unreadable Menu Items**: Marked with `TODO` in `docs/DECISIONS.md`.
+- **Menu Photos**: Add genuine food photographs to menu items through Manage Menu. The supplied Yemeni building photo is already used in the home-page hero.
+- **Menu Prices**: Seeded from the supplied menu photos; verify with restaurant staff before launch.
+- **Partially Obscured Captions**: Some labels near the bottoms of the supplied screenshots are covered by video controls; verify them before adding those items.

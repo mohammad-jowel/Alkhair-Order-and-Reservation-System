@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import ProtectedError, Prefetch, Q
+from django.db.models import Case, IntegerField, Prefetch, ProtectedError, Q, Value, When
 from accounts.decorators import admin_required
 from .models import MenuCategory, MenuItem
 from .forms import CategoryForm, MenuItemForm
@@ -23,9 +23,31 @@ def menu_list(request):
             | Q(category__category_name__icontains=search_query)
         )
 
-    categories = MenuCategory.objects.prefetch_related(
+    categories = MenuCategory.objects.all()
+    if not request.user.is_authenticated or not request.user.is_admin:
+        categories = categories.filter(items__in=items).distinct()
+    menu_category_order = [
+        'Yemeni Rice Dishes',
+        'Family Meals',
+        'Yemeni Specialties',
+        'Cold Appetizers',
+        'Fresh Juices and Cold Drinks',
+        'Shawarma and Sandwiches',
+        'Drinks',
+        'Hot Drinks',
+        'Sweets',
+    ]
+    category_order = Case(
+        *[
+            When(category_name=name, then=Value(position))
+            for position, name in enumerate(menu_category_order)
+        ],
+        default=Value(len(menu_category_order)),
+        output_field=IntegerField(),
+    )
+    categories = categories.prefetch_related(
         Prefetch('items', queryset=items.order_by('item_name'))
-    ).all()
+    ).annotate(menu_order=category_order).order_by('menu_order', 'category_name')
     selected_category_id = request.GET.get('category')
 
     if selected_category_id:

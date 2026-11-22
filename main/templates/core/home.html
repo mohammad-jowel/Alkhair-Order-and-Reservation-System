@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Restoran Alkhair - Authentic Middle-Eastern Cuisine & Charcoal Grills{% endblock %}
+{% block title %}Restoran Alkhair - Yemeni Rice Dishes & Middle-Eastern Cuisine{% endblock %}
 
 {% block content %}
 <!-- Hero Section — Dark Warm Style -->
@@ -10,12 +10,12 @@
         <!-- Hero Left — Text & CTA -->
         <div class="col-lg-7">
             <h1>
-                Authentic Flavors,<br>
-                Fresh Charcoal Grills
+                Yemeni Flavors,<br>
+                Made for Sharing
             </h1>
 
             <p class="hero-desc mb-4">
-                Welcome to Restoran Alkhair in Parit Raja, Johor. Enjoy slow-roasted lamb shanks, hand-sliced shawarma wraps, and skewers grilled to order over live charcoal embers.
+                Welcome to Restoran Alkhair in Parit Raja, Johor. Enjoy Yemeni rice dishes, family meals, traditional specialties, shawarma, and fresh juices.
             </p>
 
             <div class="d-flex flex-wrap gap-3 mb-4">
@@ -43,7 +43,7 @@
         <!-- Hero Right — Photo + Quick Info -->
         <div class="col-lg-5">
             <div class="hero-photo-area mb-3" style="height: 220px;">
-                <i class="bi bi-camera placeholder-icon"></i>
+                <img src="{% static 'img/alkhair-yemeni-building.webp' %}" alt="Yemeni architecture: traditional stone building with ornate windows">
             </div>
 
             <div class="row g-2">
@@ -76,6 +76,7 @@
         <div class="section-heading mb-0">
             <h2>House <span>Specialties</span></h2>
             <p>Signature dishes from our Middle-Eastern kitchen</p>
+            <p class="small text-muted mb-0">Menu images are AI-enhanced restorations and illustrations based on the restaurant's original menu artwork and may differ from items served.</p>
         </div>
         <a href="{% url 'menu:menu_list' %}" class="btn btn-outline-primary btn-sm">
             View Full Menu <i class="bi bi-arrow-right ms-1"></i>
@@ -88,14 +89,14 @@
             <div class="card dish-card">
                 <div class="dish-img-container">
                     {% if item.image %}
-                    <img src="{{ item.image.url }}" alt="{{ item.item_name }}" class="w-100 h-100" style="object-fit: cover;">
+                    <img src="{{ item.image.url }}" alt="Menu artwork image for {{ item.item_name }}" class="w-100 h-100" style="object-fit: cover;">
                     {% else %}
                     <i class="bi bi-camera placeholder-icon"></i>
                     {% endif %}
                 </div>
                 <div class="dish-card-body">
                     <h5 class="dish-title">{{ item.item_name }}</h5>
-                    <p class="dish-desc">{{ item.description|default:"Freshly prepared in our kitchen." }}</p>
+                    {% if item.description %}<p class="dish-desc">{{ item.description }}</p>{% endif %}
                     <div class="dish-footer">
                         <span class="dish-price">RM {{ item.price|floatformat:2 }}</span>
                         <a href="{% url 'menu:menu_list' %}" class="btn btn-add-cart">
